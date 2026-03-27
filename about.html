@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About IEEE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar" id="top">
+      <div class="container nav-wrap">
+        <a class="brand" href="index.html" aria-label="IEEE Home">
+          <span class="brand-mark">◆</span>
+          <span class="brand-text">IEEE</span>
+        </a>
+
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <nav class="nav" id="mainNav">
+          <a href="index.html">Home</a>
+          <a href="about.html">About IEEE</a>
+          <a href="index.html#events">About Events</a>
+          <a href="index.html#whatwedo">What We Do</a>
+          <a href="index.html#activities">Ongoing Activities</a>
+          <a href="contact.html">Contact Us</a>
+          <a href="signup.html">Join IEEE</a>
+          <a class="btn btn-light" href="signup.html">Sign in</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="about-page">
+      <section class="about-hero">
+        <div class="container about-layout">
+          <div class="about-gallery">
+            <article class="floating-card floating-card-top">
+              <h3>9,30,000+</h3>
+              <p>Sales in July 2021 with 5 star ratings and happy clients.</p>
+              <div class="avatar-row">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </article>
+
+            <img class="gallery-image tall" src="Design/IEEE WEBSITE DESIGN events.jpg" alt="IEEE event audience" />
+            <img class="gallery-image wide" src="Design/IEEE WEBSITE DESIGN Home page.jpg" alt="IEEE keynote speaker" />
+
+            <article class="floating-card floating-card-bottom">
+              <p class="rating-title">Best ratings</p>
+              <p class="rating-emojis">😍 😁 🙂 😜 😄</p>
+            </article>
+          </div>
+
+          <div class="about-copy">
+            <p class="about-logo">◆ IEEE</p>
+            <h1>ABOUT US</h1>
+            <p>
+              IEEE Student Branch at Carmel College of Engineering and Technology is dedicated to
+              technical excellence, peer learning, and innovation-driven growth. We host impactful
+              events, support student projects, and connect aspiring engineers with global
+              opportunities through IEEE communities.
+            </p>
+            <a class="btn about-btn" href="index.html#whatwedo">Explore More</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-header">
+        <a class="brand footer-dim-brand" href="index.html" aria-label="IEEE Home">
+          <span class="brand-mark">◆</span>
+          <span class="brand-text">IEEE</span>
+        </a>
+        <nav class="footer-nav">
+          <a href="about.html">About us</a>
+          <a href="#">Services</a>
+          <a href="index.html#events">Use Cases</a>
+          <a href="#">Pricing</a>
+          <a href="#">Blog</a>
+        </nav>
+        <div class="footer-social-icons">
+          <a href="#" class="si-link" aria-label="LinkedIn">in</a>
+          <a href="#" class="si-link" aria-label="Facebook">f</a>
+          <a href="#" class="si-link" aria-label="Twitter">𝕏</a>
+        </div>
+      </div>
+
+      <div class="container footer-body">
+        <div class="footer-contact">
+          <span class="contact-us-badge">Contact us:</span>
+          <p>Email: ieeecarmelcollege@gmail.com</p>
+          <p>Phone: +91 97780 12972</p>
+          <p>Address: Punnapra P.O, Alappuzha, Kerala, India. Pin Code 688004</p>
+        </div>
+        <form class="newsletter-form" onsubmit="return false">
+          <input type="email" placeholder="Email" aria-label="Newsletter email" />
+          <button class="btn" type="button">Subscribe to news</button>
+        </form>
+      </div>
+
+      <div class="container footer-bottom">
+        <p>© 2026 IEEE. All Rights Reserved.</p>
+        <a href="#">Privacy Policy</a>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

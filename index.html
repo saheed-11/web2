@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IEEE Student Branch – Carmel College</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(180deg, #f7f9fc 0%, #ffffff 22%, #ffffff 100%);
+  color: #111;
+  overflow-x: hidden;
+}
+.page { display: none; }
+.page.active { display: block; }
+
+/* ===== NAVBAR ===== */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  height: 76px; background: rgba(21, 101, 192, 0.94);
+  display: flex; align-items: center; padding: 0 40px; gap: 10px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 12px 32px rgba(10, 34, 66, 0.16);
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; cursor: pointer; margin-right: 22px; flex-shrink: 0; }
+.nav-logo-text { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 0.02em; }
+.nav-links { display: flex; align-items: center; gap: 4px; list-style: none; }
+.nav-links a, .nav-links button {
+  background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif;
+  color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 500;
+  padding: 10px 14px; border-radius: 10px; text-decoration: none; transition: background 0.15s;
+}
+.nav-links a:hover, .nav-links button:hover { background: rgba(255,255,255,0.15); }
+.nav-signin {
+  margin-left: auto; background: transparent !important;
+  border: 1.5px solid rgba(255,255,255,0.8) !important;
+  color: #fff !important; font-weight: 600 !important;
+  padding: 10px 22px !important; border-radius: 12px !important;
+  cursor: pointer; font-size: 14px !important; font-family: 'Inter',sans-serif;
+  transition: background 0.2s !important;
+}
+.nav-signin:hover { background: rgba(255,255,255,0.12) !important; }
+
+/* ===== HOME ===== */
+#page-home { padding-top: 76px; }
+
+.hero {
+  position: relative; background: #1a1f2e;
+  min-height: 560px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 88px 32px 84px; overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background: url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1400&q=80') center/cover;
+  opacity: 0.28;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(7, 18, 38, 0.18) 0%, rgba(7, 18, 38, 0.58) 100%);
+}
+.hero-inner { position: relative; z-index: 1; max-width: 940px; width: 100%; }
+.hero-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.76); margin-bottom: 16px; }
+.hero h1 { font-size: clamp(48px, 6vw, 78px); font-weight: 800; color: #fff; line-height: 0.98; margin-bottom: 12px; }
+.hero h2 { font-size: 22px; font-weight: 600; color: rgba(255,255,255,0.8); margin-bottom: 18px; }
+.hero-desc { font-size: 17px; color: rgba(255,255,255,0.72); line-height: 1.8; margin: 0 auto 28px; max-width: 760px; }
+.hero-search {
+  display: flex; align-items: center; gap: 10px; max-width: 520px; margin: 0 auto 24px;
+  background: rgba(255,255,255,0.97); border-radius: 14px; padding: 12px 14px 12px 18px;
+  box-shadow: 0 16px 44px rgba(0,0,0,0.18);
+}
+.hero-search input { flex: 1; border: none; outline: none; font-size: 15px; background: transparent; color: #333; }
+.hero-search input::placeholder { color: #aaa; }
+.hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.btn-ghost { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.4); color: #fff; padding: 13px 28px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'Inter',sans-serif; }
+.btn-blue-solid { background: #1565C0; border: none; color: #fff; padding: 13px 28px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'Inter',sans-serif; box-shadow: 0 12px 28px rgba(21,101,192,0.3); }
+.btn-blue-solid:hover { background: #0d47a1; }
+
+.stats-row { display: flex; justify-content: center; gap: 84px; padding: 52px 32px 42px; flex-wrap: wrap; max-width: 1400px; margin: 0 auto; }
+.stat { text-align: center; }
+.stat-num { font-size: 48px; font-weight: 800; color: #1976D2; line-height: 1; }
+.stat-lbl { font-size: 15px; color: #777; margin-top: 8px; }
+
+.ieee-mark { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 0 28px; font-size: 18px; font-weight: 700; color: #222; }
+
+.cards-wrap { padding: 0 32px 20px; max-width: 1150px; margin: 0 auto; }
+.cards-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+
+.card { border-radius: 22px; padding: 28px 24px 22px; display: flex; flex-direction: column; min-height: 220px; position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 12px 30px rgba(16, 24, 40, 0.08); }
+.card:hover { transform: translateY(-4px); box-shadow: 0 20px 44px rgba(0,0,0,0.14); }
+.c-dark { background: #1a1f2e; }
+.c-blue { background: #1565C0; }
+.c-gray { background: #f0f2f5; border: 1.5px solid #e2e6ec; }
+.c-white { background: #fff; border: 1.5px solid #e2e6ec; }
+
+.cbadge { display: inline-block; width: fit-content; font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 8px; margin-bottom: 14px; }
+.c-dark .cbadge, .c-blue .cbadge { background: rgba(255,255,255,0.18); color: #fff; }
+.c-gray .cbadge, .c-white .cbadge { background: #1565C0; color: #fff; }
+
+.ctitle { font-size: 24px; font-weight: 700; line-height: 1.25; flex: 1; max-width: 62%; }
+.c-dark .ctitle, .c-blue .ctitle { color: #fff; }
+.c-gray .ctitle { color: #111; }
+.c-white .ctitle { color: #1565C0; }
+
+.clink { display: flex; align-items: center; gap: 10px; margin-top: 18px; font-size: 15px; font-weight: 600; }
+.c-dark .clink, .c-blue .clink { color: rgba(255,255,255,0.85); }
+.c-gray .clink, .c-white .clink { color: #333; }
+.carrow { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.c-dark .carrow, .c-blue .carrow { background: rgba(255,255,255,0.18); color: #fff; }
+.c-gray .carrow, .c-white .carrow { background: rgba(0,0,0,0.08); }
+
+.card-art { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); width: 126px; height: 110px; }
+
+/* Sponsors */
+.sponsors { padding: 72px 32px 48px; text-align: center; max-width: 1400px; margin: 0 auto; }
+.sponsors h3 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+.sponsors-sub { font-size: 15px; color: #999; margin-bottom: 30px; }
+.sp-logos { display: flex; align-items: center; justify-content: center; gap: 42px; flex-wrap: wrap; }
+.sp { font-weight: 800; letter-spacing: -0.02em; }
+.sp-green { color: #1DB954; font-size: 26px; }
+.sp-stripe { color: #6772E5; font-size: 28px; letter-spacing: -0.05em; }
+.sp-nike { color: #111; font-size: 28px; font-style: italic; }
+.sp-bc { color: #003082; font-size: 15px; text-align: center; line-height: 1.35; }
+.sp-ua { color: #666; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+.sp-ola { color: #F97316; font-size: 26px; }
+.page-dots { display: flex; gap: 8px; justify-content: center; margin-top: 22px; }
+.pd { width: 11px; height: 11px; border-radius: 50%; }
+.pd-on { background: #1565C0; } .pd-off { background: #ddd; }
+
+/* Contact section in home */
+.contact-home { padding: 18px 32px 64px; max-width: 1380px; margin: 0 auto; }
+.ch-top { display: flex; align-items: center; gap: 18px; margin-bottom: 26px; }
+.ch-tag { background: #1565C0; color: #fff; font-size: 16px; font-weight: 700; padding: 8px 18px; border-radius: 10px; white-space: nowrap; }
+.ch-sub { font-size: 16px; color: #666; }
+
+.cf-card {
+  background: #f0f2f5; border-radius: 28px;
+  padding: 40px 40px;
+  display: grid; grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 24px; align-items: center;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+}
+.cf-left { display: flex; flex-direction: column; gap: 16px; }
+.radio-row { display: flex; gap: 28px; }
+.radio-row label { display: flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 500; cursor: pointer; }
+.radio-row input[type=radio] { accent-color: #1565C0; width: 18px; height: 18px; }
+.ff { display: flex; flex-direction: column; gap: 8px; }
+.ff label { font-size: 14px; font-weight: 600; color: #333; }
+.fi {
+  background: #fff; border: 1.5px solid #d0d5dd; border-radius: 10px;
+  padding: 14px 16px; font-size: 15px; font-family: 'Inter',sans-serif;
+  outline: none; color: #333; transition: border-color 0.2s;
+}
+.fi:focus { border-color: #1565C0; }
+.fta {
+  background: #fff; border: 1.5px solid #d0d5dd; border-radius: 10px;
+  padding: 14px 16px; font-size: 15px; font-family: 'Inter',sans-serif;
+  outline: none; resize: vertical; min-height: 120px; color: #333; transition: border-color 0.2s;
+}
+.fta:focus { border-color: #1565C0; }
+.btn-send {
+  width: 100%; padding: 11px; background: #1565C0; color: #fff; border: none;
+  border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;
+  font-family: 'Inter',sans-serif;
+}
+.btn-send:hover { background: #0d47a1; }
+
+.star-col { position: relative; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; }
+
+/* ===== FOOTER ===== */
+.site-footer {
+  background: #0f1117; border-radius: 26px 26px 0 0;
+  margin: 0 20px; padding: 38px 40px 24px;
+  color: rgba(255,255,255,0.7);
+}
+.ft-top { display: flex; align-items: center; justify-content: space-between; padding-bottom: 26px; flex-wrap: wrap; gap: 18px; }
+.ft-logo { display: flex; align-items: center; gap: 8px; }
+.ft-logo-t { font-size: 22px; font-weight: 800; color: rgba(255,255,255,0.4); }
+.ft-nav { display: flex; gap: 28px; flex-wrap: wrap; }
+.ft-nav a { color: rgba(255,255,255,0.6); font-size: 15px; text-decoration: none; }
+.ft-nav a:hover { color: #fff; }
+.ft-socials { display: flex; gap: 10px; }
+.soc {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 13px; font-weight: 700; text-decoration: none; transition: background 0.2s;
+}
+.soc:hover { background: #1565C0; }
+.ft-mid { display: flex; justify-content: space-between; align-items: flex-start; gap: 28px; padding-bottom: 24px; flex-wrap: wrap; }
+.ft-ctag { display: inline-block; background: #1565C0; color: #fff; font-size: 13px; font-weight: 700; padding: 5px 12px; border-radius: 7px; margin-bottom: 12px; }
+.ft-cinfo p { font-size: 15px; line-height: 1.9; color: rgba(255,255,255,0.6); }
+.ft-sub {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px; padding: 18px 18px;
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  flex: 1; min-width: 300px; max-width: 460px;
+}
+.ft-sub input {
+  flex: 1; background: rgba(255,255,255,0.08); border: none; border-radius: 8px;
+  padding: 12px 14px; color: #fff; font-size: 14px; outline: none;
+  font-family: 'Inter',sans-serif; min-width: 0;
+}
+.ft-sub input::placeholder { color: rgba(255,255,255,0.35); }
+.btn-sub { background: #1565C0; color: #fff; border: none; padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Inter',sans-serif; white-space: nowrap; }
+.ft-bot { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.ft-bot p { font-size: 13px; color: rgba(255,255,255,0.35); }
+.ft-bot a { font-size: 13px; color: rgba(255,255,255,0.45); text-decoration: none; }
+
+/* ===== CONTACT PAGE ===== */
+#page-contact { padding-top: 76px; }
+.cp-body { max-width: 1380px; margin: 0 auto; padding: 72px 32px 56px; }
+.cp-card {
+  background: #f0f2f5; border-radius: 28px; padding: 48px 44px;
+  display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: center; min-height: 560px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+}
+.cp-left { display: flex; flex-direction: column; gap: 16px; padding-right: 24px; }
+.cp-right { display: flex; align-items: center; justify-content: center; height: 100%; }
+
+/* ===== AUTH PAGE (Login / Sign Up) ===== */
+#page-login { padding-top: 76px; }
+.auth-wrap {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  min-height: calc(100vh - 76px);
+}
+
+/* Left decorative panel */
+.auth-left {
+  background: linear-gradient(145deg, #0a1628 0%, #0d2342 45%, #1249a0 100%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 64px 48px;
+  overflow: hidden;
+}
+.auth-left::before {
+  content: '';
+  position: absolute;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.06);
+  top: -140px; left: -160px;
+  pointer-events: none;
+}
+.auth-left::after {
+  content: '';
+  position: absolute;
+  width: 360px; height: 360px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.05);
+  bottom: -80px; right: -100px;
+  pointer-events: none;
+}
+.auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 52px; position: relative; z-index: 1; }
+.auth-brand-name { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: 0.01em; }
+.auth-tagline { font-size: 34px; font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 16px; position: relative; z-index: 1; }
+.auth-sub {
+  font-size: 15px; color: rgba(255,255,255,0.58); line-height: 1.75;
+  margin-bottom: 48px; max-width: 340px; position: relative; z-index: 1;
+}
+.auth-features { list-style: none; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 1; }
+.auth-features li {
+  display: flex; align-items: center; gap: 14px;
+  color: rgba(255,255,255,0.88); font-size: 14.5px; font-weight: 500;
+}
+.auth-check {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(255,255,255,0.13); border: 1px solid rgba(255,255,255,0.22);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.auth-deco {
+  position: absolute; bottom: 48px; right: 40px; opacity: 0.06;
+  pointer-events: none;
+}
+
+/* Right form panel */
+.auth-right {
+  background: #f4f7fb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 48px;
+}
+.auth-card {
+  background: #fff;
+  border-radius: 28px;
+  padding: 48px 44px;
+  width: 100%;
+  max-width: 530px;
+  box-shadow: 0 28px 70px rgba(8, 24, 56, 0.11);
+}
+
+/* Tab switcher */
+.auth-tabs {
+  display: flex;
+  background: #eef1f6;
+  border-radius: 16px;
+  padding: 5px;
+  margin-bottom: 38px;
+  gap: 4px;
+}
+.auth-tab {
+  flex: 1;
+  padding: 13px 0;
+  border: none;
+  background: none;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #8898aa;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.auth-tab.active {
+  background: #fff;
+  color: #1565C0;
+  box-shadow: 0 2px 12px rgba(21,101,192,0.13);
+}
+.auth-tab:hover:not(.active) { color: #444; }
+
+/* Form sections */
+.auth-form { display: none; flex-direction: column; gap: 20px; }
+.auth-form.active { display: flex; }
+
+.auth-form-title { font-size: 28px; font-weight: 800; color: #0d1b2a; line-height: 1.2; }
+.auth-form-sub { font-size: 14px; color: #8898aa; margin-top: 4px; }
+
+.af { display: flex; flex-direction: column; gap: 7px; }
+.af label { font-size: 13px; font-weight: 600; color: #374151; letter-spacing: 0.01em; text-transform: uppercase; }
+.af-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ainput {
+  width: 100%;
+  padding: 14px 16px;
+  background: #f8fafc;
+  border: 1.5px solid #e4e9f0;
+  border-radius: 12px;
+  font-size: 14.5px;
+  color: #111;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.ainput:focus {
+  border-color: #1565C0;
+  box-shadow: 0 0 0 4px rgba(21,101,192,0.09);
+  background: #fff;
+}
+.ainput::placeholder { color: #c4cdd8; }
+
+.forgot-row { display: flex; justify-content: flex-end; margin-top: 4px; }
+.forgot-link { font-size: 13px; color: #1565C0; font-weight: 600; text-decoration: none; }
+.forgot-link:hover { text-decoration: underline; }
+
+.btn-auth-primary {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #1565C0 0%, #0a3d91 100%);
+  color: #fff;
+  border: none;
+  border-radius: 13px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  box-shadow: 0 10px 28px rgba(21,101,192,0.28);
+  transition: opacity 0.2s, transform 0.15s;
+}
+.btn-auth-primary:hover { opacity: 0.91; transform: translateY(-1px); }
+.btn-auth-primary:active { transform: translateY(0); }
+
+.auth-or {
+  display: flex; align-items: center; gap: 12px;
+  color: #c0cad8; font-size: 13px; font-weight: 500;
+}
+.auth-or::before, .auth-or::after { content: ''; flex: 1; height: 1px; background: #eaeff5; }
+
+.auth-oauth { display: flex; gap: 12px; }
+.auth-oab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 13px 16px;
+  border: 1.5px solid #e4e9f0;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  color: #222;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.15s;
+}
+.auth-oab:hover { border-color: #1565C0; background: #f0f5ff; }
+
+.auth-switch { font-size: 14px; color: #8898aa; text-align: center; }
+.auth-switch-link {
+  color: #1565C0; font-weight: 700; cursor: pointer;
+  text-decoration: none; background: none; border: none;
+  font-family: 'Inter', sans-serif; font-size: 14px; padding: 0;
+}
+.auth-switch-link:hover { text-decoration: underline; }
+
+@media (max-width: 1024px) {
+  .navbar { padding: 0 24px; }
+  .hero { min-height: 500px; padding: 72px 24px 68px; }
+  .stats-row { gap: 44px; }
+  .cards-wrap, .contact-home, .cp-body { padding-left: 24px; padding-right: 24px; }
+  .cf-card, .cp-card { grid-template-columns: 1fr; }
+  .star-col, .cp-right { display: none; }
+  .site-footer { margin: 0 12px; padding: 30px 24px 20px; }
+  .auth-wrap { grid-template-columns: 340px 1fr; }
+  .auth-left { padding: 48px 36px; }
+  .auth-tagline { font-size: 26px; }
+}
+
+@media (max-width: 680px) {
+  .navbar { height: 68px; padding: 0 16px; }
+  .nav-logo-text { font-size: 18px; }
+  #page-home, #page-contact, #page-login { padding-top: 68px; }
+  .hero { min-height: 440px; padding: 56px 18px 52px; }
+  .hero h1 { font-size: 40px; }
+  .hero h2 { font-size: 18px; }
+  .hero-desc { font-size: 15px; }
+  .hero-search { max-width: 100%; }
+  .cards-grid { grid-template-columns: 1fr; }
+  .auth-wrap { grid-template-columns: 1fr; }
+  .auth-left { display: none; }
+  .auth-right { padding: 32px 16px; align-items: flex-start; padding-top: 40px; }
+  .auth-card { padding: 32px 22px; }
+  .af-row { grid-template-columns: 1fr; }
+  .stats-row { gap: 24px; padding: 36px 18px 28px; }
+  .stat-num { font-size: 36px; }
+  .stat-lbl { font-size: 13px; }
+  .cards-wrap, .contact-home, .cp-body { padding-left: 16px; padding-right: 16px; }
+  .card { min-height: 190px; padding: 22px 20px 18px; }
+  .ctitle { font-size: 20px; max-width: 70%; }
+  .card-art { width: 96px; height: 86px; right: 14px; }
+  .cf-card, .cp-card { padding: 26px 20px; }
+  .site-footer { margin: 0 8px; padding: 24px 18px 18px; }
+  .nav-links { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+  <div class="nav-logo" onclick="showPage('home')">
+    <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
+      <path d="M18 3L5 11V25L18 33L31 25V11L18 3Z" stroke="white" stroke-width="2.2" fill="rgba(255,255,255,0.1)"/>
+      <path d="M18 9L10 14V22L18 27L26 22V14L18 9Z" fill="rgba(255,255,255,0.18)"/>
+      <circle cx="18" cy="18" r="3.5" fill="white"/>
+    </svg>
+    <span class="nav-logo-text">IEEE</span>
+  </div>
+  <ul class="nav-links">
+    <li><button onclick="showPage('home')">Home</button></li>
+    <li><a href="about.html">About IEEE</a></li>
+    <li><a href="#">About Events</a></li>
+    <li><a href="#">what we do</a></li>
+    <li><a href="#">Ongoing Activities</a></li>
+    <li><button onclick="showPage('contact')">Contact us</button></li>
+    <li><a href="#">Join IEEE</a></li>  
+  </ul>
+  <button class="nav-signin" onclick="showPage('login')">Sign in</button>
+</nav>
+<div>
+  
+</div>
+
+<!-- ===== HOME PAGE ===== -->
+<div id="page-home" class="page active">
+
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-inner">
+      <p class="hero-eyebrow">Computer Science and Engineering</p>
+      <h1>IEEE Student Branch</h1>
+      <h2>Carmel College of Engineering and Technology</h2>
+      <p class="hero-desc">Advancing technology for the benefit of humanity — empowering students through innovation, collaboration, and professional development.</p>
+      <div class="hero-search">
+        <svg width="14" height="14" fill="none" stroke="#999" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search for IEEE"/>
+      </div>
+      <div class="hero-btns">
+        <button class="btn-ghost">Learn More ↓</button>
+        <button class="btn-blue-solid" onclick="showPage('login')">Join IEEE →</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-num">56K</div><div class="stat-lbl">Members</div></div>
+    <div class="stat"><div class="stat-num">128K</div><div class="stat-lbl">Society</div></div>
+    <div class="stat"><div class="stat-num">234K</div><div class="stat-lbl">Members</div></div>
+    <div class="stat"><div class="stat-num">20K</div><div class="stat-lbl">Members</div></div>
+  </div>
+
+  <div class="ieee-mark">
+    <svg width="20" height="20" viewBox="0 0 36 36" fill="none"><path d="M18 3L5 11V25L18 33L31 25V11L18 3Z" stroke="#111" stroke-width="2"/><circle cx="18" cy="18" r="3" fill="#111"/></svg>
+    IEEE
+  </div>
+
+  <div class="cards-wrap">
+    <div class="cards-grid">
+
+      <div class="card c-dark">
+        <div class="cbadge">Events</div>
+        <div class="ctitle">Major Events or Achievements</div>
+        <div class="clink"><div class="carrow">↗</div> Learn more</div>
+        <svg class="card-art" viewBox="0 0 80 72" fill="none">
+          <rect x="6" y="10" width="68" height="54" rx="9" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+          <rect x="6" y="10" width="68" height="16" rx="9" fill="rgba(255,255,255,0.11)"/>
+          <circle cx="16" cy="18" r="3.2" fill="rgba(255,255,255,0.5)"/>
+          <circle cx="26" cy="18" r="3.2" fill="rgba(255,255,255,0.28)"/>
+          <circle cx="36" cy="18" r="3.2" fill="rgba(255,255,255,0.18)"/>
+          <path d="M62 18 L65 14 L68 18" stroke="rgba(255,255,255,0.55)" stroke-width="1.5" fill="none"/>
+          <rect x="13" y="34" width="26" height="3.5" rx="1.75" fill="rgba(255,255,255,0.22)"/>
+          <rect x="13" y="41" width="18" height="3.5" rx="1.75" fill="rgba(255,255,255,0.14)"/>
+          <rect x="13" y="48" width="22" height="3.5" rx="1.75" fill="rgba(255,255,255,0.14)"/>
+          <path d="M48 50 L52 42 L56 48 L60 36 L64 44" stroke="rgba(255,255,255,0.4)" stroke-width="1.4" fill="none" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <div class="card c-gray">
+        <div class="cbadge">IEEE</div>
+        <div class="ctitle" style="color:#111;">About IEEE</div>
+        <div class="clink"><div class="carrow">↗</div> Learn more</div>
+        <svg class="card-art" viewBox="0 0 80 72" fill="none">
+          <rect x="6" y="10" width="68" height="54" rx="9" fill="rgba(21,101,192,0.06)" stroke="rgba(21,101,192,0.14)" stroke-width="1.5"/>
+          <rect x="6" y="10" width="68" height="16" rx="9" fill="rgba(21,101,192,0.1)"/>
+          <circle cx="16" cy="18" r="3.2" fill="rgba(21,101,192,0.45)"/>
+          <circle cx="26" cy="18" r="3.2" fill="rgba(21,101,192,0.25)"/>
+          <circle cx="36" cy="18" r="3.2" fill="rgba(21,101,192,0.15)"/>
+          <circle cx="40" cy="46" r="11" stroke="rgba(21,101,192,0.3)" stroke-width="1.5" fill="none"/>
+          <circle cx="40" cy="46" r="5.5" fill="rgba(21,101,192,0.18)"/>
+          <line x1="33" y1="46" x2="47" y2="46" stroke="rgba(21,101,192,0.35)" stroke-width="1.2"/>
+          <line x1="40" y1="39" x2="40" y2="53" stroke="rgba(21,101,192,0.35)" stroke-width="1.2"/>
+        </svg>
+      </div>
+
+      <div class="card c-blue">
+        <div class="cbadge">Overview</div>
+        <div class="ctitle">IEEE Student Branch overview</div>
+        <div class="clink"><div class="carrow">↗</div> Learn more</div>
+        <svg class="card-art" viewBox="0 0 80 72" fill="none">
+          <rect x="6" y="10" width="68" height="54" rx="9" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+          <rect x="6" y="10" width="68" height="16" rx="9" fill="rgba(255,255,255,0.12)"/>
+          <circle cx="16" cy="18" r="3.2" fill="rgba(255,255,255,0.5)"/>
+          <circle cx="26" cy="18" r="3.2" fill="rgba(255,255,255,0.28)"/>
+          <rect x="13" y="32" width="22" height="22" rx="5" fill="rgba(255,255,255,0.12)"/>
+          <path d="M20 44 L24 39 L29 45" stroke="rgba(255,255,255,0.55)" stroke-width="1.4" fill="none"/>
+          <rect x="40" y="32" width="28" height="5" rx="2.5" fill="rgba(255,255,255,0.2)"/>
+          <rect x="40" y="41" width="20" height="5" rx="2.5" fill="rgba(255,255,255,0.14)"/>
+          <rect x="40" y="50" width="24" height="5" rx="2.5" fill="rgba(255,255,255,0.1)"/>
+        </svg>
+      </div>
+
+      <div class="card c-dark">
+        <div class="cbadge">What we do</div>
+        <div class="ctitle">what we Do ?</div>
+        <div class="clink"><div class="carrow">↗</div> Learn more</div>
+        <svg class="card-art" viewBox="0 0 80 72" fill="none">
+          <rect x="6" y="10" width="68" height="54" rx="9" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+          <rect x="6" y="10" width="68" height="16" rx="9" fill="rgba(255,255,255,0.11)"/>
+          <circle cx="16" cy="18" r="3.2" fill="rgba(255,255,255,0.5)"/>
+          <circle cx="26" cy="18" r="3.2" fill="rgba(255,255,255,0.28)"/>
+          <path d="M62 18 L65 14 L68 18" stroke="rgba(255,255,255,0.55)" stroke-width="1.5" fill="none"/>
+          <rect x="12" y="30" width="18" height="30" rx="3.5" fill="rgba(255,255,255,0.09)" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+          <rect x="34" y="38" width="18" height="22" rx="3.5" fill="rgba(255,255,255,0.09)" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+          <rect x="56" y="44" width="12" height="16" rx="3.5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+        </svg>
+      </div>
+
+      <div class="card c-white">
+        <div class="cbadge">Past</div>
+        <div class="ctitle">Past Activities</div>
+        <div class="clink"><div class="carrow">↗</div> Learn more</div>
+        <svg class="card-art" viewBox="0 0 80 72" fill="none">
+          <rect x="6" y="10" width="68" height="54" rx="9" fill="rgba(21,101,192,0.04)" stroke="rgba(21,101,192,0.12)" stroke-width="1.5"/>
+          <rect x="6" y="10" width="68" height="16" rx="9" fill="rgba(21,101,192,0.08)"/>
+          <circle cx="16" cy="18" r="3.2" fill="rgba(21,101,192,0.4)"/>
+          <circle cx="26" cy="18" r="3.2" fill="rgba(21,101,192,0.22)"/>
+          <circle cx="26" cy="46" r="10" stroke="rgba(21,101,192,0.3)" stroke-width="1.3" fill="none"/>
+          <path d="M26 39 V46 L31 50" stroke="rgba(21,101,192,0.55)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <rect x="42" y="36" width="22" height="4" rx="2" fill="rgba(21,101,192,0.15)"/>
+          <rect x="42" y="44" width="16" height="4" rx="2" fill="rgba(21,101,192,0.1)"/>
+          <rect x="42" y="52" width="19" height="4" rx="2" fill="rgba(21,101,192,0.08)"/>
+        </svg>
+      </div>
+
+      <div class="card c-blue">
+        <div class="cbadge">Awards</div>
+        <div class="ctitle">Achievements and milestones</div>
+        <div class="clink"><div class="carrow">↗</div> Learn more</div>
+        <svg class="card-art" viewBox="0 0 80 72" fill="none">
+          <rect x="6" y="10" width="68" height="54" rx="9" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+          <rect x="6" y="10" width="68" height="16" rx="9" fill="rgba(255,255,255,0.12)"/>
+          <circle cx="16" cy="18" r="3.2" fill="rgba(255,255,255,0.5)"/>
+          <circle cx="26" cy="18" r="3.2" fill="rgba(255,255,255,0.28)"/>
+          <rect x="42" y="30" width="24" height="4" rx="2" fill="rgba(255,255,255,0.2)"/>
+          <rect x="42" y="38" width="18" height="4" rx="2" fill="rgba(255,255,255,0.14)"/>
+          <rect x="42" y="46" width="21" height="4" rx="2" fill="rgba(255,255,255,0.1)"/>
+          <path d="M26 55 L28.5 44 L20 40 L28.5 37 L26 26 L33 33 L40 26 L37.5 37 L46 40 L37.5 44 L40 55 L33 49 Z" fill="rgba(255,255,255,0.32)" stroke="rgba(255,255,255,0.45)" stroke-width="0.8"/>
+        </svg>
+      </div>
+
+      <div class="card c-dark">
+        <div class="cbadge">Ongoing</div>
+        <div class="ctitle">Present &amp; Ongoing Activities</div>
+        <div class="clink"><div class="carrow">↗</div> Learn more</div>
+        <svg class="card-art" viewBox="0 0 80 72" fill="none">
+          <rect x="6" y="10" width="68" height="54" rx="9" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+          <rect x="6" y="10" width="68" height="16" rx="9" fill="rgba(255,255,255,0.11)"/>
+          <circle cx="16" cy="18" r="3.2" fill="rgba(255,255,255,0.5)"/>
+          <circle cx="26" cy="18" r="3.2" fill="rgba(255,255,255,0.28)"/>
+          <rect x="13" y="32" width="54" height="7" rx="3.5" fill="rgba(255,255,255,0.14)"/>
+          <rect x="13" y="43" width="40" height="7" rx="3.5" fill="rgba(255,255,255,0.1)"/>
+          <rect x="13" y="54" width="48" height="7" rx="3.5" fill="rgba(255,255,255,0.08)"/>
+        </svg>
+      </div>
+
+      <div class="card c-white">
+        <div class="cbadge">Societies</div>
+        <div class="ctitle">Societies &amp; initiatives</div>
+        <div class="clink"><div class="carrow">↗</div> Learn more</div>
+        <svg class="card-art" viewBox="0 0 80 72" fill="none">
+          <rect x="6" y="10" width="68" height="54" rx="9" fill="rgba(21,101,192,0.04)" stroke="rgba(21,101,192,0.12)" stroke-width="1.5"/>
+          <rect x="6" y="10" width="68" height="16" rx="9" fill="rgba(21,101,192,0.08)"/>
+          <circle cx="16" cy="18" r="3.2" fill="rgba(21,101,192,0.4)"/>
+          <circle cx="26" cy="18" r="3.2" fill="rgba(21,101,192,0.22)"/>
+          <circle cx="28" cy="46" r="10" stroke="rgba(21,101,192,0.28)" stroke-width="1.3" fill="none"/>
+          <circle cx="50" cy="46" r="10" stroke="rgba(21,101,192,0.28)" stroke-width="1.3" fill="none"/>
+          <circle cx="39" cy="46" r="10" stroke="rgba(21,101,192,0.22)" stroke-width="1.3" fill="rgba(21,101,192,0.05)"/>
+        </svg>
+      </div>
+
+      <div class="card c-blue">
+        <div class="cbadge">Team</div>
+        <div class="ctitle">Team &amp; Leadership</div>
+        <div class="clink"><div class="carrow">↗</div> Learn more</div>
+        <svg class="card-art" viewBox="0 0 80 72" fill="none">
+          <rect x="6" y="10" width="68" height="54" rx="9" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+          <rect x="6" y="10" width="68" height="16" rx="9" fill="rgba(255,255,255,0.12)"/>
+          <circle cx="16" cy="18" r="3.2" fill="rgba(255,255,255,0.5)"/>
+          <circle cx="26" cy="18" r="3.2" fill="rgba(255,255,255,0.28)"/>
+          <circle cx="40" cy="36" r="7" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.38)" stroke-width="1"/>
+          <circle cx="22" cy="50" r="6" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+          <circle cx="58" cy="50" r="6" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+          <path d="M28 50 L52 50" stroke="rgba(255,255,255,0.25)" stroke-width="1" stroke-dasharray="3 2"/>
+          <path d="M40 43 L40 44" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+        </svg>
+      </div>
+
+      <div class="card c-dark" onclick="showPage('contact')">
+        <div class="cbadge">Join</div>
+        <div class="ctitle">Join IEEE &amp; Contact</div>
+        <div class="clink"><div class="carrow">↗</div> Learn more</div>
+        <svg class="card-art" viewBox="0 0 80 72" fill="none">
+          <rect x="6" y="10" width="68" height="54" rx="9" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+          <rect x="6" y="10" width="68" height="16" rx="9" fill="rgba(255,255,255,0.11)"/>
+          <circle cx="16" cy="18" r="3.2" fill="rgba(255,255,255,0.5)"/>
+          <circle cx="26" cy="18" r="3.2" fill="rgba(255,255,255,0.28)"/>
+          <path d="M62 18 L65 14 L68 18" stroke="rgba(255,255,255,0.55)" stroke-width="1.5" fill="none"/>
+          <rect x="13" y="30" width="54" height="34" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.16)" stroke-width="1"/>
+          <path d="M13 38 L40 50 L67 38" stroke="rgba(255,255,255,0.28)" stroke-width="1.3" fill="none"/>
+        </svg>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sponsors -->
+  <div class="sponsors">
+    <h3>Sponsors</h3>
+    <p class="sponsors-sub">our valued strategic innovation partners</p>
+    <div class="sp-logos">
+      <span class="sp sp-green">Spotify</span>
+      <span class="sp sp-stripe">stripe</span>
+      <span class="sp sp-nike">NIKE</span>
+      <span class="sp sp-bc">🇬🇧 BRITISH<br/>COUNCIL</span>
+      <span class="sp sp-ua">UNDER ARMOUR</span>
+      <span class="sp sp-bc">🇬🇧 BRITISH<br/>COUNCIL</span>
+      <span class="sp sp-ola">OLA</span>
+    </div>
+    <div class="page-dots">
+      <div class="pd pd-on"></div>
+      <div class="pd pd-off"></div>
+      <div class="pd pd-off"></div>
+    </div>
+  </div>
+
+  <!-- Contact section -->
+  <div class="contact-home">
+    <div class="ch-top">
+      <div class="ch-tag">Contact Us</div>
+      <p class="ch-sub">Connect with Us. Let's Discuss Your Digital Marketing Needs</p>
+    </div>
+    <div class="cf-card">
+      <div class="cf-left">
+        <div class="radio-row">
+          <label><input type="radio" name="cr1" checked/> Say Hi</label>
+          <label><input type="radio" name="cr1"/> Get a Quote</label>
+        </div>
+        <div class="ff"><label>Name</label><input class="fi" type="text" placeholder="Name"/></div>
+        <div class="ff"><label>Email*</label><input class="fi" type="email" placeholder="Email"/></div>
+        <div class="ff"><label>Message*</label><textarea class="fta" placeholder="Message"></textarea></div>
+        <button class="btn-send">Send Message</button>
+      </div>
+      <div class="star-col">
+        <svg width="210" height="210" viewBox="0 0 210 210" fill="none">
+          <g stroke="#333" stroke-width="0.85" opacity="0.4">
+            <line x1="105" y1="105" x2="105" y2="10"/><line x1="105" y1="105" x2="105" y2="200"/>
+            <line x1="105" y1="105" x2="10" y2="105"/><line x1="105" y1="105" x2="200" y2="105"/>
+            <line x1="105" y1="105" x2="41" y2="41"/><line x1="105" y1="105" x2="169" y2="169"/>
+            <line x1="105" y1="105" x2="169" y2="41"/><line x1="105" y1="105" x2="41" y2="169"/>
+            <line x1="105" y1="105" x2="18" y2="65"/><line x1="105" y1="105" x2="192" y2="145"/>
+            <line x1="105" y1="105" x2="192" y2="65"/><line x1="105" y1="105" x2="18" y2="145"/>
+            <line x1="105" y1="105" x2="65" y2="12"/><line x1="105" y1="105" x2="145" y2="198"/>
+            <line x1="105" y1="105" x2="145" y2="12"/><line x1="105" y1="105" x2="65" y2="198"/>
+            <line x1="105" y1="105" x2="12" y2="82"/><line x1="105" y1="105" x2="12" y2="128"/>
+            <line x1="105" y1="105" x2="198" y2="128"/><line x1="105" y1="105" x2="198" y2="82"/>
+          </g>
+          <!-- Big black star -->
+          <path d="M105 55 L112 88 L145 95 L112 102 L105 135 L98 102 L65 95 L98 88 Z" fill="#1a1f2e"/>
+          <!-- Smaller blue star -->
+          <path d="M74 148 L79 168 L99 172 L79 176 L74 196 L69 176 L49 172 L69 168 Z" fill="#1565C0"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="site-footer">
+    <div class="ft-top">
+      <div class="ft-logo">
+        <svg width="26" height="26" viewBox="0 0 36 36" fill="none"><path d="M18 3L5 11V25L18 33L31 25V11L18 3Z" stroke="rgba(255,255,255,0.35)" stroke-width="2"/><circle cx="18" cy="18" r="3" fill="rgba(255,255,255,0.35)"/></svg>
+        <span class="ft-logo-t">IEEE</span>
+      </div>
+      <nav class="ft-nav">
+        <a href="#">About us</a><a href="#">Services</a><a href="#">Use Cases</a><a href="#">Pricing</a><a href="#">Blog</a>
+      </nav>
+      <div class="ft-socials">
+        <a class="soc" href="#">in</a><a class="soc" href="#">f</a><a class="soc" href="#">𝕏</a>
+      </div>
+    </div>
+    <div class="ft-mid">
+      <div class="ft-cinfo">
+        <div class="ft-ctag">Contact us:</div>
+        <p>Email: ieeecarmelcollege@gmail.com<br/>Phone: +91 97780 12972<br/>Address: Punnapra P.O., Alappuzha, Kerala, India,<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pin Code 688004</p>
+      </div>
+      <div class="ft-sub">
+        <input type="email" placeholder="Email"/>
+        <button class="btn-sub">Subscribe to news</button>
+      </div>
+    </div>
+    <div class="ft-bot">
+      <p>© 2023 IEEE. All Rights Reserved.</p>
+      <a href="#">Privacy Policy</a>
+    </div>
+  </div>
+
+</div><!-- /home -->
+
+<!-- ===== CONTACT PAGE ===== -->
+<div id="page-contact" class="page">
+  <div class="cp-body">
+    <div class="cp-card">
+      <div class="cp-left">
+        <div class="radio-row">
+          <label><input type="radio" name="cr2" checked/> Say Hi</label>
+          <label><input type="radio" name="cr2"/> Get a Quote</label>
+        </div>
+        <div class="ff"><label>Name</label><input class="fi" type="text" placeholder="Name"/></div>
+        <div class="ff"><label>Email*</label><input class="fi" type="email" placeholder="Email"/></div>
+        <div class="ff"><label>Message*</label><textarea class="fta" placeholder="Message" style="min-height:140px;"></textarea></div>
+        <button class="btn-send">Send Message</button>
+      </div>
+      <div class="cp-right">
+        <svg width="260" height="290" viewBox="0 0 260 290" fill="none">
+          <g stroke="#333" stroke-width="0.9" opacity="0.38">
+            <line x1="135" y1="130" x2="135" y2="15"/><line x1="135" y1="130" x2="135" y2="245"/>
+            <line x1="135" y1="130" x2="20" y2="130"/><line x1="135" y1="130" x2="250" y2="130"/>
+            <line x1="135" y1="130" x2="54" y2="49"/><line x1="135" y1="130" x2="216" y2="211"/>
+            <line x1="135" y1="130" x2="216" y2="49"/><line x1="135" y1="130" x2="54" y2="211"/>
+            <line x1="135" y1="130" x2="24" y2="84"/><line x1="135" y1="130" x2="246" y2="176"/>
+            <line x1="135" y1="130" x2="246" y2="84"/><line x1="135" y1="130" x2="24" y2="176"/>
+            <line x1="135" y1="130" x2="85" y2="16"/><line x1="135" y1="130" x2="185" y2="244"/>
+            <line x1="135" y1="130" x2="185" y2="16"/><line x1="135" y1="130" x2="85" y2="244"/>
+            <line x1="135" y1="130" x2="19" y2="100"/><line x1="135" y1="130" x2="19" y2="160"/>
+            <line x1="135" y1="130" x2="251" y2="160"/><line x1="135" y1="130" x2="251" y2="100"/>
+          </g>
+          <path d="M135 72 L143 110 L181 118 L143 126 L135 164 L127 126 L89 118 L127 110 Z" fill="#1a1f2e"/>
+          <path d="M97 185 L103 208 L126 212 L103 216 L97 239 L91 216 L68 212 L91 208 Z" fill="#1565C0"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="site-footer" style="margin: 0 6px;">
+    <div class="ft-top">
+      <div class="ft-logo">
+        <svg width="26" height="26" viewBox="0 0 36 36" fill="none"><path d="M18 3L5 11V25L18 33L31 25V11L18 3Z" stroke="rgba(255,255,255,0.35)" stroke-width="2"/><circle cx="18" cy="18" r="3" fill="rgba(255,255,255,0.35)"/></svg>
+        <span class="ft-logo-t">IEEE</span>
+      </div>
+      <nav class="ft-nav">
+        <a href="#">About us</a><a href="#">Services</a><a href="#">Use Cases</a><a href="#">Pricing</a><a href="#">Blog</a>
+      </nav>
+      <div class="ft-socials">
+        <a class="soc" href="#">in</a><a class="soc" href="#">f</a><a class="soc" href="#">𝕏</a>
+      </div>
+    </div>
+    <div class="ft-mid">
+      <div class="ft-cinfo">
+        <div class="ft-ctag">Contact us:</div>
+        <p>Email: ieeecarmelcollege@gmail.com<br/>Phone: +91 97780 12972<br/>Address: Punnapra P.O., Alappuzha, Kerala, India,<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pin Code 688004</p>
+      </div>
+      <div class="ft-sub">
+        <input type="email" placeholder="Email"/>
+        <button class="btn-sub">Subscribe to news</button>
+      </div>
+    </div>
+    <div class="ft-bot">
+      <p>© 2023 IEEE. All Rights Reserved.</p>
+      <a href="#">Privacy Policy</a>
+    </div>
+  </div>
+</div><!-- /contact -->
+
+<!-- ===== AUTH PAGE (Login / Sign Up) ===== -->
+<div id="page-login" class="page">
+  <div class="auth-wrap">
+
+    <!-- Left panel -->
+    <div class="auth-left">
+      <div class="auth-brand">
+        <svg width="44" height="44" viewBox="0 0 36 36" fill="none">
+          <path d="M18 3L5 11V25L18 33L31 25V11L18 3Z" stroke="white" stroke-width="2" fill="rgba(255,255,255,0.1)"/>
+          <path d="M18 9L10 14V22L18 27L26 22V14L18 9Z" fill="rgba(255,255,255,0.18)"/>
+          <circle cx="18" cy="18" r="3.5" fill="white"/>
+        </svg>
+        <span class="auth-brand-name">IEEE</span>
+      </div>
+      <h2 class="auth-tagline">Join the World's Largest Technical Community</h2>
+      <p class="auth-sub">Carmel College of Engineering &amp; Technology — empowering students through innovation, research, and professional growth.</p>
+      <ul class="auth-features">
+        <li>
+          <span class="auth-check"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          Access 900+ peer-reviewed journals
+        </li>
+        <li>
+          <span class="auth-check"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          Network with 420,000+ global members
+        </li>
+        <li>
+          <span class="auth-check"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          Exclusive student events &amp; workshops
+        </li>
+        <li>
+          <span class="auth-check"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          Career mentorship &amp; industry exposure
+        </li>
+      </ul>
+      <!-- Decorative rings -->
+      <svg class="auth-deco" width="340" height="340" viewBox="0 0 340 340" fill="none">
+        <circle cx="170" cy="170" r="160" stroke="white" stroke-width="1"/>
+        <circle cx="170" cy="170" r="110" stroke="white" stroke-width="1"/>
+        <circle cx="170" cy="170" r="60" stroke="white" stroke-width="1"/>
+        <circle cx="170" cy="170" r="20" fill="white"/>
+      </svg>
+    </div>
+
+    <!-- Right form panel -->
+    <div class="auth-right">
+      <div class="auth-card">
+
+        <!-- Tab switcher -->
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-signup" onclick="switchAuthTab('signup')">Sign Up</button>
+          <button class="auth-tab" id="tab-login" onclick="switchAuthTab('login')">Log In</button>
+        </div>
+
+        <!-- SIGN UP FORM -->
+        <div class="auth-form active" id="auth-signup">
+          <div>
+            <div class="auth-form-title">Create your account</div>
+            <div class="auth-form-sub">Start your IEEE journey today — it's free.</div>
+          </div>
+          <div class="af-row">
+            <div class="af"><label>First Name</label><input class="ainput" type="text" placeholder="John"/></div>
+            <div class="af"><label>Last Name</label><input class="ainput" type="text" placeholder="Doe"/></div>
+          </div>
+          <div class="af"><label>Email Address</label><input class="ainput" type="email" placeholder="john.doe@example.com"/></div>
+          <div class="af"><label>Password</label><input class="ainput" type="password" placeholder="Min. 8 characters"/></div>
+          <div class="af"><label>Confirm Password</label><input class="ainput" type="password" placeholder="Re-enter your password"/></div>
+          <button class="btn-auth-primary">Create Account →</button>
+          <div class="auth-or">or continue with</div>
+          <div class="auth-oauth">
+            <a class="auth-oab" href="#">
+              <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 33 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4.5 24 4.5 12.7 4.5 3.5 13.7 3.5 25S12.7 45.5 24 45.5C35.3 45.5 44 37 44 25.5c0-1.8-.2-3.6-.4-5.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 19 12 24 12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4.5 24 4.5c-7.6 0-14.2 4.3-17.7 10.2z"/><path fill="#4CAF50" d="M24 45.5c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.3 37.1 26.8 38 24 38c-5.3 0-9.7-3-11.3-7.3l-6.6 4.8C9.8 41.2 16.4 45.5 24 45.5z"/><path fill="#1565C0" d="M43.6 20H24v8h11.3c-.8 2.2-2.2 4-4 5.3l6.2 5.2C41.2 35.2 44 30.7 44 25.5c0-1.8-.2-3.5-.4-5.5z"/></svg>
+              Google
+            </a>
+            <a class="auth-oab" href="#">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#111"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.29 9.42 7.86 10.96.58.1.79-.25.79-.55v-1.93c-3.2.7-3.88-1.54-3.88-1.54-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.19.92-.26 1.9-.38 2.88-.39.98.01 1.96.13 2.88.39 2.2-1.5 3.17-1.19 3.17-1.19.63 1.58.24 2.75.11 3.04.74.81 1.19 1.83 1.19 3.09 0 4.43-2.7 5.41-5.27 5.7.42.36.79 1.06.79 2.14v3.17c0 .31.21.66.8.55C20.21 21.41 23.5 17.1 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
+              GitHub
+            </a>
+          </div>
+          <p class="auth-switch">Already have an account? <button class="auth-switch-link" onclick="switchAuthTab('login')">Log in</button></p>
+        </div>
+
+        <!-- LOG IN FORM -->
+        <div class="auth-form" id="auth-login">
+          <div>
+            <div class="auth-form-title">Welcome back</div>
+            <div class="auth-form-sub">Sign in to your IEEE account.</div>
+          </div>
+          <div class="af"><label>Email Address</label><input class="ainput" type="email" placeholder="john.doe@example.com"/></div>
+          <div class="af">
+            <label>Password</label>
+            <input class="ainput" type="password" placeholder="Enter your password"/>
+            <div class="forgot-row"><a class="forgot-link" href="#">Forgot password?</a></div>
+          </div>
+          <button class="btn-auth-primary">Sign In →</button>
+          <div class="auth-or">or continue with</div>
+          <div class="auth-oauth">
+            <a class="auth-oab" href="#">
+              <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 33 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4.5 24 4.5 12.7 4.5 3.5 13.7 3.5 25S12.7 45.5 24 45.5C35.3 45.5 44 37 44 25.5c0-1.8-.2-3.6-.4-5.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 19 12 24 12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4.5 24 4.5c-7.6 0-14.2 4.3-17.7 10.2z"/><path fill="#4CAF50" d="M24 45.5c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.3 37.1 26.8 38 24 38c-5.3 0-9.7-3-11.3-7.3l-6.6 4.8C9.8 41.2 16.4 45.5 24 45.5z"/><path fill="#1565C0" d="M43.6 20H24v8h11.3c-.8 2.2-2.2 4-4 5.3l6.2 5.2C41.2 35.2 44 30.7 44 25.5c0-1.8-.2-3.5-.4-5.5z"/></svg>
+              Google
+            </a>
+            <a class="auth-oab" href="#">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#111"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.29 9.42 7.86 10.96.58.1.79-.25.79-.55v-1.93c-3.2.7-3.88-1.54-3.88-1.54-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.19.92-.26 1.9-.38 2.88-.39.98.01 1.96.13 2.88.39 2.2-1.5 3.17-1.19 3.17-1.19.63 1.58.24 2.75.11 3.04.74.81 1.19 1.83 1.19 3.09 0 4.43-2.7 5.41-5.27 5.7.42.36.79 1.06.79 2.14v3.17c0 .31.21.66.8.55C20.21 21.41 23.5 17.1 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
+              GitHub
+            </a>
+          </div>
+          <p class="auth-switch">New to IEEE? <button class="auth-switch-link" onclick="switchAuthTab('signup')">Create an account</button></p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div><!-- /login -->
+
+<script>
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+}
+function switchAuthTab(tab) {
+  document.getElementById('auth-signup').classList.toggle('active', tab === 'signup');
+  document.getElementById('auth-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+}
+</script>
+</body>
+</html>
