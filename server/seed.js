@@ -24,11 +24,11 @@ const seedData = async () => {
     console.log('Cleared existing data');
 
     // Create admin user
-    const adminPassword = await bcrypt.hash('Admin@123', 10);
+    // Don't pre-hash - the User model's pre-save hook handles hashing
     const admin = await User.create({
       name: 'Admin User',
       email: 'admin@ieee.edu',
-      password: adminPassword,
+      password: 'Admin@123',
       role: 'admin',
       phone: '+1234567890',
       department: 'Computer Science',
@@ -37,12 +37,13 @@ const seedData = async () => {
     console.log('Admin user created:', admin.email);
 
     // Create sample students
-    const studentPassword = await bcrypt.hash('Student@123', 10);
+    // insertMany doesn't trigger pre-save hooks, so we must hash passwords manually
+    const hashedStudentPassword = await bcrypt.hash('Student@123', 10);
     const students = await User.insertMany([
       {
         name: 'John Doe',
         email: 'john@student.edu',
-        password: studentPassword,
+        password: hashedStudentPassword,
         role: 'student',
         phone: '+1234567891',
         department: 'Computer Science',
@@ -51,7 +52,7 @@ const seedData = async () => {
       {
         name: 'Jane Smith',
         email: 'jane@student.edu',
-        password: studentPassword,
+        password: hashedStudentPassword,
         role: 'student',
         phone: '+1234567892',
         department: 'Electronics',
@@ -60,7 +61,7 @@ const seedData = async () => {
       {
         name: 'Mike Johnson',
         email: 'mike@student.edu',
-        password: studentPassword,
+        password: hashedStudentPassword,
         role: 'student',
         phone: '+1234567893',
         department: 'Electrical',
