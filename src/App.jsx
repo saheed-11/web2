@@ -7,6 +7,7 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import About from './pages/About';
 import Events from './pages/Events';
+import EventDetail from './pages/EventDetail';
 import Team from './pages/Team';
 import Projects from './pages/Projects';
 import Blog from './pages/Blog';
@@ -53,6 +54,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/events" element={<Events />} />
+              <Route path="/events/:eventId" element={<EventDetail />} />
               <Route path="/team" element={<Team />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/blog" element={<Blog />} />

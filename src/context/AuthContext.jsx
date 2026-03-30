@@ -41,7 +41,9 @@ export const AuthProvider = ({ children }) => {
 
   const updateUserProfile = async (userData) => {
     const updatedUser = await authService.updateProfile(userData);
+    // Update both context state and localStorage
     setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
     return updatedUser;
   };
 

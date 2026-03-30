@@ -4,15 +4,16 @@ import { User, Mail, Phone, BookOpen, Calendar, Download, Award, Loader, Edit2, 
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
 import { getErrorMessage, formatDate } from '../utils/helpers';
+import { useToast } from '../hooks/useToast';
+import ToastContainer from '../components/ToastContainer';
 
 const Profile = () => {
   const { user: currentUser, updateUserProfile } = useAuth();
+  const { toasts, hideToast, showSuccess, showError } = useToast();
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -36,7 +37,7 @@ const Profile = () => {
         year: data.year || '',
       });
     } catch (error) {
-      setError(getErrorMessage(error));
+      showError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -48,16 +49,15 @@ const Profile = () => {
 
   const handleSave = async () => {
     setSaving(true);
-    setError('');
-    setSuccess('');
 
     try {
       await updateUserProfile(formData);
-      setSuccess('Profile updated successfully');
+      showSuccess('Profile updated successfully!');
       setIsEditing(false);
-      fetchProfile();
+      // Refetch profile to get updated data including registered events
+      await fetchProfile();
     } catch (error) {
-      setError(getErrorMessage(error));
+      showError(getErrorMessage(error));
     } finally {
       setSaving(false);
     }
@@ -71,7 +71,6 @@ const Profile = () => {
       year: profile.year || '',
     });
     setIsEditing(false);
-    setError('');
   };
 
   if (loading) {
@@ -84,6 +83,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-12 px-4">
+      <ToastContainer toasts={toasts} hideToast={hideToast} />
       <div className="container-custom max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -116,18 +116,6 @@ const Profile = () => {
                 </button>
               )}
             </div>
-
-            {/* Status Messages */}
-            {error && (
-              <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400">
-                {error}
-              </div>
-            )}
-            {success && (
-              <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-600 dark:text-green-400">
-                {success}
-              </div>
-            )}
 
             {/* Profile Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

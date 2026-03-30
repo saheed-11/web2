@@ -3,6 +3,9 @@ import { motion } from 'framer-motion';
 import { Calendar, MapPin, Clock, Users, Search, Filter, ChevronRight, CheckCircle } from 'lucide-react';
 import { eventService, authService } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../hooks/useToast';
+import ToastContainer from '../components/ToastContainer';
+import { useAuth } from '../context/AuthContext';
 
 const Events = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -10,7 +13,8 @@ const Events = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(null);
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const { toasts, hideToast, showSuccess, showError } = useToast();
+  const { user: currentUser, updateUserProfile } = useAuth();
   const navigate = useNavigate();
 
   // Fetch events from API
@@ -21,16 +25,13 @@ const Events = () => {
         setEvents(data);
       } catch (error) {
         console.error('Failed to fetch events:', error);
-        setMessage({ type: 'error', text: 'Failed to load events' });
+        showError('Failed to load events');
       } finally {
         setLoading(false);
       }
     };
     fetchEvents();
   }, []);
-
-  // Get current user for checking registration status
-  const currentUser = authService.getCurrentUser();
 
   // Handle event registration
   const handleRegister = async (eventId) => {
@@ -40,17 +41,28 @@ const Events = () => {
     }
 
     setRegistering(eventId);
-    setMessage({ type: '', text: '' });
 
     try {
       await eventService.registerForEvent(eventId);
-      setMessage({ type: 'success', text: 'Successfully registered for event!' });
+      showSuccess('Successfully registered for event!');
+
       // Refresh events to update attendee count
       const data = await eventService.getEvents();
       setEvents(data);
+
+      // Update user profile in context to reflect new registration
+      if (currentUser) {
+        const updatedProfile = await authService.getProfile();
+        // Store updated user with registered events in localStorage
+        const updatedUser = {
+          ...currentUser,
+          registeredEvents: updatedProfile.registeredEvents
+        };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Failed to register';
-      setMessage({ type: 'error', text: errorMsg });
+      showError(errorMsg);
     } finally {
       setRegistering(null);
     }
@@ -83,6 +95,7 @@ const Events = () => {
 
   return (
     <div className="pt-20">
+      <ToastContainer toasts={toasts} hideToast={hideToast} />
       {/* Hero Section */}
       <section className="relative py-20 bg-gradient-to-br from-ieee-blue via-blue-600 to-blue-800 text-white overflow-hidden">
         <div className="absolute inset-0 opacity-10">
@@ -146,13 +159,6 @@ const Events = () => {
             </p>
           </div>
 
-          {/* Status Message */}
-          {message.text && (
-            <div className={`mb-6 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-              {message.text}
-            </div>
-          )}
-
           {loading ? (
             <div className="text-center py-12">
               <p className="text-gray-500 dark:text-gray-400 text-lg">Loading events...</p>
@@ -168,7 +174,11 @@ const Events = () => {
                   transition={{ delay: index * 0.1 }}
                   className="card group overflow-hidden"
                 >
-                  <div className="relative h-48 mb-4 -mt-6 -mx-6 overflow-hidden">
+                  <div
+                    className="cursor-pointer"
+                    onClick={() => navigate(`/events/${event._id}`)}
+                  >
+                    <div className="relative h-48 mb-4 -mt-6 -mx-6 overflow-hidden">
                     <img
                       src={event.image || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=250&fit=crop'}
                       alt={event.title}
@@ -184,7 +194,10 @@ const Events = () => {
                     )}
                   </div>
 
-                  <h3 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white group-hover:text-ieee-blue transition-colors">
+                  <h3
+                    className="text-2xl font-bold mb-3 text-gray-900 dark:text-white group-hover:text-ieee-blue transition-colors cursor-pointer"
+                    onClick={() => navigate(`/events/${event._id}`)}
+                  >
                     {event.title}
                   </h3>
 
@@ -211,31 +224,36 @@ const Events = () => {
                     {event.description}
                   </p>
 
-                  {isRegistered(event) ? (
-                    <button 
-                      className="w-full flex items-center justify-center px-6 py-3 bg-green-100 text-green-700 font-semibold rounded-xl cursor-default"
-                      disabled
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => navigate(`/events/${event._id}`)}
+                      className="flex-1 flex items-center justify-center px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
                     >
-                      <CheckCircle size={18} className="mr-2" />
-                      Already Registered
-                    </button>
-                  ) : event.registrationOpen ? (
-                    <button 
-                      onClick={() => handleRegister(event._id)}
-                      disabled={registering === event._id}
-                      className="btn-primary w-full flex items-center justify-center disabled:opacity-50"
-                    >
-                      {registering === event._id ? 'Registering...' : 'Register Now'}
+                      View Details
                       <ChevronRight size={18} className="ml-2" />
                     </button>
-                  ) : (
-                    <button 
-                      className="w-full flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-500 font-semibold rounded-xl cursor-not-allowed"
-                      disabled
-                    >
-                      Registration Closed
-                    </button>
-                  )}
+
+                    {isRegistered(event) ? (
+                      <button
+                        className="flex-1 flex items-center justify-center px-4 py-3 bg-green-100 text-green-700 font-semibold rounded-xl cursor-default"
+                        disabled
+                      >
+                        <CheckCircle size={18} className="mr-2" />
+                        Registered
+                      </button>
+                    ) : event.registrationOpen ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRegister(event._id);
+                        }}
+                        disabled={registering === event._id}
+                        className="flex-1 btn-primary flex items-center justify-center disabled:opacity-50"
+                      >
+                        {registering === event._id ? 'Registering...' : 'Register'}
+                      </button>
+                    ) : null}
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -270,7 +288,8 @@ const Events = () => {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.05 }}
-                  className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow group"
+                  className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow group cursor-pointer"
+                  onClick={() => navigate(`/events/${event._id}`)}
                 >
                   <div className="relative h-40 overflow-hidden">
                     <img
