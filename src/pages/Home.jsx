@@ -1,12 +1,37 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Users, Calendar, Award, BookOpen, TrendingUp, Rocket,
   Target, Lightbulb, ArrowRight, Star, CheckCircle
 } from 'lucide-react';
+import { eventService } from '../services/authService';
 
 const Home = () => {
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const events = await eventService.getEvents();
+        // Filter for upcoming events (date >= today) and take first 3
+        const now = new Date();
+        const upcoming = events
+          .filter(event => new Date(event.date) >= now)
+          .sort((a, b) => new Date(a.date) - new Date(b.date))
+          .slice(0, 3);
+        setUpcomingEvents(upcoming);
+      } catch (error) {
+        console.error('Failed to fetch events:', error);
+        // Fallback to empty array on error
+        setUpcomingEvents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
+  }, []);
   const fadeInUp = {
     initial: { opacity: 0, y: 60 },
     animate: { opacity: 1, y: 0 },
@@ -80,26 +105,11 @@ const Home = () => {
     },
   ];
 
-  const upcomingEvents = [
-    {
-      title: 'AI/ML Workshop',
-      date: 'April 15, 2026',
-      type: 'Workshop',
-      description: 'Introduction to Machine Learning with Python and TensorFlow'
-    },
-    {
-      title: 'Web Development Bootcamp',
-      date: 'April 22, 2026',
-      type: 'Bootcamp',
-      description: 'Learn modern web development with React and Node.js'
-    },
-    {
-      title: 'Tech Talk: Industry Trends',
-      date: 'May 5, 2026',
-      type: 'Seminar',
-      description: 'Leading industry experts discuss emerging technologies'
-    },
-  ];
+  // Helper function to format date
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  };
 
   return (
     <div className="pt-20">
@@ -320,37 +330,47 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {upcomingEvents.map((event, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="card"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm font-semibold px-3 py-1 bg-ieee-blue/10 text-ieee-blue rounded-full">
-                    {event.type}
-                  </span>
-                  <Calendar className="text-gray-400" size={20} />
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
-                  {event.title}
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{event.date}</p>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">{event.description}</p>
-                <Link
-                  to="/events"
-                  className="inline-flex items-center text-ieee-blue font-semibold hover:underline"
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400">Loading events...</p>
+            </div>
+          ) : upcomingEvents.length > 0 ? (
+            <div className="grid md:grid-cols-3 gap-6">
+              {upcomingEvents.map((event, index) => (
+                <motion.div
+                  key={event._id || index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="card"
                 >
-                  Learn more
-                  <ArrowRight className="ml-1" size={16} />
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-sm font-semibold px-3 py-1 bg-ieee-blue/10 text-ieee-blue rounded-full">
+                      {event.type}
+                    </span>
+                    <Calendar className="text-gray-400" size={20} />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
+                    {event.title}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{formatDate(event.date)}</p>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">{event.description}</p>
+                  <Link
+                    to="/events"
+                    className="inline-flex items-center text-ieee-blue font-semibold hover:underline"
+                  >
+                    Learn more
+                    <ArrowRight className="ml-1" size={16} />
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400">No upcoming events at the moment.</p>
+            </div>
+          )}
 
           <div className="text-center mt-8">
             <Link to="/events" className="btn-primary inline-block">

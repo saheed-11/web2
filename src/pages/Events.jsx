@@ -1,100 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Clock, Users, Search, Filter, ChevronRight } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users, Search, Filter, ChevronRight, CheckCircle } from 'lucide-react';
+import { eventService, authService } from '../services/authService';
+import { useNavigate } from 'react-router-dom';
 
 const Events = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [registering, setRegistering] = useState(null);
+  const [message, setMessage] = useState({ type: '', text: '' });
+  const navigate = useNavigate();
 
-  const upcomingEvents = [
-    {
-      id: 1,
-      title: 'AI/ML Workshop Series',
-      date: 'April 15-17, 2026',
-      time: '10:00 AM - 4:00 PM',
-      location: 'Main Auditorium',
-      type: 'Workshop',
-      attendees: 150,
-      image: 'https://images.unsplash.com/photo-1555421689-d68471e189f2?w=400&h=250&fit=crop',
-      description: 'Comprehensive 3-day workshop covering fundamentals of Machine Learning, Neural Networks, and practical AI applications using Python and TensorFlow.',
-      registrationOpen: true,
-    },
-    {
-      id: 2,
-      title: 'Web Development Bootcamp',
-      date: 'April 22-24, 2026',
-      time: '9:00 AM - 5:00 PM',
-      location: 'Computer Lab 1',
-      type: 'Bootcamp',
-      attendees: 100,
-      image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop',
-      description: 'Learn modern web development with React, Node.js, and MongoDB. Build real-world projects and deploy them online.',
-      registrationOpen: true,
-    },
-    {
-      id: 3,
-      title: 'Industry Tech Talk: Cloud Computing',
-      date: 'May 5, 2026',
-      time: '2:00 PM - 5:00 PM',
-      location: 'Seminar Hall',
-      type: 'Seminar',
-      attendees: 200,
-      image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=250&fit=crop',
-      description: 'Industry experts from leading tech companies discuss cloud computing trends, AWS services, and career opportunities.',
-      registrationOpen: true,
-    },
-    {
-      id: 4,
-      title: 'Hackathon 2026',
-      date: 'May 20-21, 2026',
-      time: '24 Hours',
-      location: 'Innovation Hub',
-      type: 'Competition',
-      attendees: 250,
-      image: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&h=250&fit=crop',
-      description: '24-hour coding marathon to build innovative solutions for real-world problems. Win prizes worth ₹1 lakh!',
-      registrationOpen: true,
-    },
-  ];
+  // Fetch events from API
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const data = await eventService.getEvents();
+        setEvents(data);
+      } catch (error) {
+        console.error('Failed to fetch events:', error);
+        setMessage({ type: 'error', text: 'Failed to load events' });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
+  }, []);
 
-  const pastEvents = [
-    {
-      id: 5,
-      title: 'Python Programming Workshop',
-      date: 'March 10, 2026',
-      type: 'Workshop',
-      attendees: 120,
-      image: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=400&h=250&fit=crop',
-      description: 'Intensive workshop on Python programming covering basics to advanced topics including data science libraries.',
-    },
-    {
-      id: 6,
-      title: 'IoT Innovation Summit',
-      date: 'February 25, 2026',
-      type: 'Conference',
-      attendees: 300,
-      image: 'https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?w=400&h=250&fit=crop',
-      description: 'Full-day conference on Internet of Things with industry speakers and project demonstrations.',
-    },
-    {
-      id: 7,
-      title: 'Cybersecurity Awareness Program',
-      date: 'February 10, 2026',
-      type: 'Seminar',
-      attendees: 180,
-      image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&h=250&fit=crop',
-      description: 'Expert-led session on cybersecurity best practices, ethical hacking, and career paths in security.',
-    },
-    {
-      id: 8,
-      title: 'Mobile App Development Workshop',
-      date: 'January 28, 2026',
-      type: 'Workshop',
-      attendees: 90,
-      image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=250&fit=crop',
-      description: 'Hands-on workshop on building mobile applications using React Native and Flutter.',
-    },
-  ];
+  // Get current user for checking registration status
+  const currentUser = authService.getCurrentUser();
+
+  // Handle event registration
+  const handleRegister = async (eventId) => {
+    if (!authService.isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
+
+    setRegistering(eventId);
+    setMessage({ type: '', text: '' });
+
+    try {
+      await eventService.registerForEvent(eventId);
+      setMessage({ type: 'success', text: 'Successfully registered for event!' });
+      // Refresh events to update attendee count
+      const data = await eventService.getEvents();
+      setEvents(data);
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Failed to register';
+      setMessage({ type: 'error', text: errorMsg });
+    } finally {
+      setRegistering(null);
+    }
+  };
+
+  // Check if user is registered for an event
+  const isRegistered = (event) => {
+    if (!currentUser) return false;
+    return event.attendees?.includes(currentUser._id);
+  };
+
+  // Separate events into upcoming and past
+  const now = new Date();
+  const upcomingEvents = events.filter(event => new Date(event.date) >= now);
+  const pastEvents = events.filter(event => new Date(event.date) < now);
 
   const eventTypes = ['all', 'Workshop', 'Bootcamp', 'Seminar', 'Conference', 'Competition'];
 
@@ -175,11 +146,22 @@ const Events = () => {
             </p>
           </div>
 
-          {filteredUpcoming.length > 0 ? (
+          {/* Status Message */}
+          {message.text && (
+            <div className={`mb-6 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              {message.text}
+            </div>
+          )}
+
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400 text-lg">Loading events...</p>
+            </div>
+          ) : filteredUpcoming.length > 0 ? (
             <div className="grid md:grid-cols-2 gap-8">
               {filteredUpcoming.map((event, index) => (
                 <motion.div
-                  key={event.id}
+                  key={event._id}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -188,7 +170,7 @@ const Events = () => {
                 >
                   <div className="relative h-48 mb-4 -mt-6 -mx-6 overflow-hidden">
                     <img
-                      src={event.image}
+                      src={event.image || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=250&fit=crop'}
                       alt={event.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
@@ -209,7 +191,7 @@ const Events = () => {
                   <div className="space-y-2 mb-4 text-gray-600 dark:text-gray-300">
                     <div className="flex items-center space-x-2">
                       <Calendar size={18} className="text-ieee-blue" />
-                      <span className="text-sm">{event.date}</span>
+                      <span className="text-sm">{new Date(event.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Clock size={18} className="text-ieee-blue" />
@@ -221,7 +203,7 @@ const Events = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <Users size={18} className="text-ieee-blue" />
-                      <span className="text-sm">{event.attendees} attendees expected</span>
+                      <span className="text-sm">{event.attendees?.length || 0} / {event.maxAttendees} registered</span>
                     </div>
                   </div>
 
@@ -229,10 +211,31 @@ const Events = () => {
                     {event.description}
                   </p>
 
-                  <button className="btn-primary w-full flex items-center justify-center">
-                    Register Now
-                    <ChevronRight size={18} className="ml-2" />
-                  </button>
+                  {isRegistered(event) ? (
+                    <button 
+                      className="w-full flex items-center justify-center px-6 py-3 bg-green-100 text-green-700 font-semibold rounded-xl cursor-default"
+                      disabled
+                    >
+                      <CheckCircle size={18} className="mr-2" />
+                      Already Registered
+                    </button>
+                  ) : event.registrationOpen ? (
+                    <button 
+                      onClick={() => handleRegister(event._id)}
+                      disabled={registering === event._id}
+                      className="btn-primary w-full flex items-center justify-center disabled:opacity-50"
+                    >
+                      {registering === event._id ? 'Registering...' : 'Register Now'}
+                      <ChevronRight size={18} className="ml-2" />
+                    </button>
+                  ) : (
+                    <button 
+                      className="w-full flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-500 font-semibold rounded-xl cursor-not-allowed"
+                      disabled
+                    >
+                      Registration Closed
+                    </button>
+                  )}
                 </motion.div>
               ))}
             </div>
@@ -262,7 +265,7 @@ const Events = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {filteredPast.map((event, index) => (
                 <motion.div
-                  key={event.id}
+                  key={event._id}
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
@@ -271,7 +274,7 @@ const Events = () => {
                 >
                   <div className="relative h-40 overflow-hidden">
                     <img
-                      src={event.image}
+                      src={event.image || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=250&fit=crop'}
                       alt={event.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
@@ -286,11 +289,11 @@ const Events = () => {
                     </h3>
                     <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 text-sm mb-2">
                       <Calendar size={14} />
-                      <span>{event.date}</span>
+                      <span>{new Date(event.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                     </div>
                     <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 text-sm mb-3">
                       <Users size={14} />
-                      <span>{event.attendees} attendees</span>
+                      <span>{event.attendees?.length || 0} attended</span>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
                       {event.description}
