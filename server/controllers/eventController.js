@@ -138,7 +138,7 @@ export const registerForEvent = async (req, res) => {
     // Add event to user's registered events
     user.registeredEvents.push({
       event: event._id,
-      registeredAt: Date.now(),
+      registeredAt: new Date(),
     });
     await user.save();
 

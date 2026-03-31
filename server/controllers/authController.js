@@ -106,22 +106,30 @@ export const getProfile = async (req, res) => {
 // @access  Private
 export const updateProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const { name, phone, department, year, password } = req.body;
+    
+    // Build update object
+    const updateFields = {};
+    if (name) updateFields.name = name;
+    if (phone !== undefined) updateFields.phone = phone;
+    if (department !== undefined) updateFields.department = department;
+    if (year !== undefined) updateFields.year = year;
+    updateFields.updatedAt = new Date();
 
-    if (user) {
-      user.name = req.body.name || user.name;
-      user.phone = req.body.phone || user.phone;
-      user.department = req.body.department || user.department;
-      user.year = req.body.year || user.year;
+    // If password is being updated, hash it manually
+    if (password) {
+      const bcrypt = await import('bcryptjs');
+      const salt = await bcrypt.default.genSalt(10);
+      updateFields.password = await bcrypt.default.hash(password, salt);
+    }
 
-      if (req.body.password) {
-        user.password = req.body.password;
-      }
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      updateFields,
+      { new: true, runValidators: true }
+    );
 
-      user.updatedAt = Date.now();
-
-      const updatedUser = await user.save();
-
+    if (updatedUser) {
       res.json({
         _id: updatedUser._id,
         name: updatedUser.name,
@@ -136,6 +144,7 @@ export const updateProfile = async (req, res) => {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
+    console.error('Profile update error:', error);
     res.status(500).json({ message: error.message });
   }
 };
