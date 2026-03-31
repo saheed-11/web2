@@ -110,7 +110,6 @@ export const deleteEvent = async (req, res) => {
 export const registerForEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
-    const user = await User.findById(req.user._id);
 
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
@@ -135,15 +134,23 @@ export const registerForEvent = async (req, res) => {
     event.attendees.push(req.user._id);
     await event.save();
 
-    // Add event to user's registered events
-    user.registeredEvents.push({
-      event: event._id,
-      registeredAt: new Date(),
-    });
-    await user.save();
+    // Add event to user's registered events using findByIdAndUpdate to bypass pre-save hook
+    await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $push: {
+          registeredEvents: {
+            event: event._id,
+            registeredAt: new Date(),
+            attended: false,
+          }
+        }
+      }
+    );
 
     res.json({ message: 'Successfully registered for event' });
   } catch (error) {
+    console.error('Registration error:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -154,7 +161,6 @@ export const registerForEvent = async (req, res) => {
 export const unregisterFromEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
-    const user = await User.findById(req.user._id);
 
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
@@ -166,11 +172,15 @@ export const unregisterFromEvent = async (req, res) => {
     );
     await event.save();
 
-    // Remove event from user's registered events
-    user.registeredEvents = user.registeredEvents.filter(
-      reg => reg.event.toString() !== event._id.toString()
+    // Remove event from user's registered events using findByIdAndUpdate
+    await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $pull: {
+          registeredEvents: { event: event._id }
+        }
+      }
     );
-    await user.save();
 
     res.json({ message: 'Successfully unregistered from event' });
   } catch (error) {
