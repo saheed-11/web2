@@ -116,7 +116,7 @@ const Home = () => {
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-ieee-blue via-blue-600 to-blue-800">
         {/* Animated Background */}
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden bg-gradient-to-br from-ieee-navy via-slate-900 to-ieee-blue">
           <div className="absolute w-96 h-96 bg-blue-400/20 rounded-full blur-3xl -top-48 -left-48 animate-pulse"></div>
           <div className="absolute w-96 h-96 bg-purple-400/20 rounded-full blur-3xl -bottom-48 -right-48 animate-pulse delay-1000"></div>
         </div>
