@@ -70,66 +70,115 @@ const seedData = async () => {
     ]);
     console.log(`${students.length} students created`);
 
-    // Create sample events
+    // Create sample events with new fields
     const events = await Event.insertMany([
       {
         title: 'Web Development Workshop',
-        description: 'Learn modern web development with React and Node.js',
+        description: 'Learn modern web development with React and Node.js. This hands-on workshop covers frontend and backend development.',
         date: new Date('2024-04-15'),
         time: '10:00 AM',
         location: 'Main Auditorium',
+        category: 'Workshop',
         type: 'Workshop',
+        mode: 'offline',
+        status: 'upcoming',
         image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee',
         registrationOpen: true,
         maxAttendees: 100,
+        speakers: [
+          { name: 'Dr. Sarah Wilson', designation: 'Senior Developer', organization: 'TechCorp' }
+        ],
         createdBy: admin._id,
       },
       {
         title: 'AI & Machine Learning Bootcamp',
-        description: 'Intensive bootcamp covering AI and ML fundamentals',
+        description: 'Intensive bootcamp covering AI and ML fundamentals including neural networks, deep learning, and practical applications.',
         date: new Date('2024-04-20'),
         time: '9:00 AM',
         location: 'Lab Building',
+        category: 'Bootcamp',
         type: 'Bootcamp',
+        mode: 'hybrid',
+        status: 'upcoming',
         image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995',
         registrationOpen: true,
         maxAttendees: 50,
+        speakers: [
+          { name: 'Prof. James Chen', designation: 'AI Researcher', organization: 'MIT' },
+          { name: 'Dr. Emily Brown', designation: 'ML Engineer', organization: 'Google' }
+        ],
         createdBy: admin._id,
       },
       {
         title: 'Cloud Computing Seminar',
-        description: 'Industry experts discussing cloud technologies',
+        description: 'Industry experts discussing cloud technologies, AWS, Azure, and Google Cloud platforms.',
         date: new Date('2024-04-25'),
         time: '2:00 PM',
-        location: 'Conference Hall',
+        location: 'Online - Zoom',
+        category: 'Seminar',
         type: 'Seminar',
+        mode: 'online',
+        status: 'upcoming',
         image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa',
         registrationOpen: true,
         maxAttendees: 150,
+        speakers: [
+          { name: 'Alex Johnson', designation: 'Cloud Architect', organization: 'AWS' }
+        ],
         createdBy: admin._id,
       },
       {
         title: 'IEEE Tech Conference 2024',
-        description: 'Annual technology conference with guest speakers',
+        description: 'Annual technology conference featuring keynote speakers, panel discussions, and networking opportunities.',
         date: new Date('2024-05-01'),
         time: '9:00 AM',
         location: 'Grand Hall',
+        category: 'Conference',
         type: 'Conference',
+        mode: 'offline',
+        status: 'upcoming',
         image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
         registrationOpen: true,
         maxAttendees: 300,
+        speakers: [
+          { name: 'Dr. Michael Lee', designation: 'IEEE Fellow', organization: 'IEEE' },
+          { name: 'Lisa Park', designation: 'CTO', organization: 'StartupHub' },
+          { name: 'Robert Williams', designation: 'Professor', organization: 'Stanford' }
+        ],
         createdBy: admin._id,
       },
       {
         title: 'Hackathon 2024',
-        description: '24-hour coding competition with prizes',
+        description: '24-hour coding competition with amazing prizes. Build innovative solutions and compete with the best.',
         date: new Date('2024-05-10'),
         time: '8:00 AM',
         location: 'Innovation Center',
-        type: 'Competition',
+        category: 'Hackathon',
+        type: 'Hackathon',
+        mode: 'offline',
+        status: 'upcoming',
         image: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d',
         registrationOpen: true,
         maxAttendees: 80,
+        speakers: [],
+        createdBy: admin._id,
+      },
+      {
+        title: 'Cybersecurity Webinar',
+        description: 'Learn about the latest cybersecurity threats and how to protect your systems.',
+        date: new Date('2024-05-15'),
+        time: '3:00 PM',
+        location: 'Online - Teams',
+        category: 'Webinar',
+        type: 'Webinar',
+        mode: 'online',
+        status: 'upcoming',
+        image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b',
+        registrationOpen: true,
+        maxAttendees: 200,
+        speakers: [
+          { name: 'David Kim', designation: 'Security Expert', organization: 'CyberSec Inc.' }
+        ],
         createdBy: admin._id,
       },
     ]);

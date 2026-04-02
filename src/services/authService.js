@@ -115,9 +115,9 @@ export const adminService = {
     return response.data;
   },
 
-  // Get all users
-  getUsers: async () => {
-    const response = await api.get('/admin/users');
+  // Get all users with optional filters
+  getUsers: async (params = {}) => {
+    const response = await api.get('/admin/users', { params });
     return response.data;
   },
 
@@ -130,6 +130,12 @@ export const adminService = {
   // Update user role
   updateUserRole: async (id, role) => {
     const response = await api.put(`/admin/users/${id}/role`, { role });
+    return response.data;
+  },
+
+  // Update user details
+  updateUser: async (id, userData) => {
+    const response = await api.put(`/admin/users/${id}`, userData);
     return response.data;
   },
 
@@ -153,6 +159,78 @@ export const adminService = {
         },
       }
     );
+    return response.data;
+  },
+
+  // Get analytics data
+  getAnalytics: async (params = {}) => {
+    const response = await api.get('/admin/analytics', { params });
+    return response.data;
+  },
+
+  // Get activity logs
+  getActivityLogs: async (params = {}) => {
+    const response = await api.get('/admin/activity-logs', { params });
+    return response.data;
+  },
+
+  // Get notifications
+  getNotifications: async (params = {}) => {
+    const response = await api.get('/admin/notifications', { params });
+    return response.data;
+  },
+
+  // Create notification
+  createNotification: async (notificationData) => {
+    const response = await api.post('/admin/notifications', notificationData);
+    return response.data;
+  },
+
+  // Mark notification as read
+  markNotificationRead: async (id) => {
+    const response = await api.put(`/admin/notifications/${id}/read`);
+    return response.data;
+  },
+
+  // Mark all notifications as read
+  markAllNotificationsRead: async () => {
+    const response = await api.put('/admin/notifications/mark-all-read');
+    return response.data;
+  },
+
+  // Generate QR code for event
+  generateEventQR: async (eventId) => {
+    const response = await api.post(`/admin/events/${eventId}/generate-qr`);
+    return response.data;
+  },
+
+  // Mark attendance
+  markAttendance: async (eventId, userId) => {
+    const response = await api.post(`/admin/events/${eventId}/attendance/${userId}`);
+    return response.data;
+  },
+
+  // Get email logs
+  getEmailLogs: async (params = {}) => {
+    const response = await api.get('/admin/email-logs', { params });
+    return response.data;
+  },
+
+  // Send bulk email
+  sendBulkEmail: async (emailData) => {
+    const response = await api.post('/admin/emails/send-bulk', emailData);
+    return response.data;
+  },
+
+  // Export users to CSV data
+  exportUsers: async (params = {}) => {
+    const response = await api.get('/admin/users/export', { params });
+    return response.data;
+  },
+
+  // Get event registrations with details
+  getEventRegistrations: async (eventId) => {
+    const response = await api.get(`/admin/events/${eventId}/registrations`);
     return response.data;
   },
 };

@@ -1,5 +1,17 @@
 import Event from '../models/Event.js';
 import User from '../models/User.js';
+import mongoose from 'mongoose';
+
+// Helper function to validate MongoDB ObjectId
+const isValidObjectId = (id) => {
+  if (!id || typeof id !== 'string') return false;
+  try {
+    return mongoose.Types.ObjectId.isValid(id) && 
+           (new mongoose.Types.ObjectId(id)).toString() === id;
+  } catch (error) {
+    return false;
+  }
+};
 
 // @desc    Get all events
 // @route   GET /api/events
@@ -18,6 +30,10 @@ export const getEvents = async (req, res) => {
 // @access  Public
 export const getEventById = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid event ID format' });
+    }
+
     const event = await Event.findById(req.params.id).populate('attendees', 'name email');
 
     if (event) {
@@ -35,7 +51,21 @@ export const getEventById = async (req, res) => {
 // @access  Private/Admin
 export const createEvent = async (req, res) => {
   try {
-    const { title, description, date, time, location, type, image, maxAttendees } = req.body;
+    const { 
+      title, 
+      description, 
+      date, 
+      time, 
+      location, 
+      type, 
+      category,
+      mode,
+      status,
+      image, 
+      maxAttendees,
+      speakers,
+      registrationOpen,
+    } = req.body;
 
     const event = await Event.create({
       title,
@@ -43,9 +73,14 @@ export const createEvent = async (req, res) => {
       date,
       time,
       location,
-      type,
+      type: type || category, // Use type or category
+      category: category || type, // Use category or type
+      mode: mode || 'offline',
+      status: status || 'upcoming',
       image,
       maxAttendees,
+      speakers: speakers || [],
+      registrationOpen: registrationOpen !== undefined ? registrationOpen : true,
       createdBy: req.user._id,
     });
 
@@ -60,6 +95,10 @@ export const createEvent = async (req, res) => {
 // @access  Private/Admin
 export const updateEvent = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid event ID format' });
+    }
+
     const event = await Event.findById(req.params.id);
 
     if (event) {
@@ -68,12 +107,21 @@ export const updateEvent = async (req, res) => {
       event.date = req.body.date || event.date;
       event.time = req.body.time || event.time;
       event.location = req.body.location || event.location;
-      event.type = req.body.type || event.type;
-      event.image = req.body.image || event.image;
+      event.type = req.body.type || req.body.category || event.type;
+      event.category = req.body.category || req.body.type || event.category;
+      event.mode = req.body.mode || event.mode;
+      event.status = req.body.status || event.status;
+      event.image = req.body.image !== undefined ? req.body.image : event.image;
       event.registrationOpen = req.body.registrationOpen !== undefined
         ? req.body.registrationOpen
         : event.registrationOpen;
       event.maxAttendees = req.body.maxAttendees || event.maxAttendees;
+      
+      // Handle speakers array - filter out any speakers without a name
+      if (req.body.speakers !== undefined) {
+        event.speakers = (req.body.speakers || []).filter(s => s && s.name);
+      }
+      
       event.updatedAt = Date.now();
 
       const updatedEvent = await event.save();
@@ -82,7 +130,8 @@ export const updateEvent = async (req, res) => {
       res.status(404).json({ message: 'Event not found' });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Update event error:', error);
+    res.status(500).json({ message: error.message || 'Failed to update event' });
   }
 };
 
@@ -91,6 +140,10 @@ export const updateEvent = async (req, res) => {
 // @access  Private/Admin
 export const deleteEvent = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid event ID format' });
+    }
+
     const event = await Event.findById(req.params.id);
 
     if (event) {
@@ -109,6 +162,10 @@ export const deleteEvent = async (req, res) => {
 // @access  Private
 export const registerForEvent = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid event ID format' });
+    }
+
     const event = await Event.findById(req.params.id);
 
     if (!event) {
@@ -160,6 +217,10 @@ export const registerForEvent = async (req, res) => {
 // @access  Private
 export const unregisterFromEvent = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid event ID format' });
+    }
+
     const event = await Event.findById(req.params.id);
 
     if (!event) {

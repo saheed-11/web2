@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
@@ -16,14 +16,42 @@ import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Profile from './pages/Profile';
-import AdminDashboard from './pages/admin/AdminDashboard';
 import './styles/index.css';
+
+// Lazy load admin components to prevent blocking main app
+const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
+const DashboardHome = React.lazy(() => import('./pages/admin/DashboardHome'));
+const EventsManager = React.lazy(() => import('./pages/admin/EventsManager'));
+const MembersManager = React.lazy(() => import('./pages/admin/MembersManager'));
+const EmailCenter = React.lazy(() => import('./pages/admin/EmailCenter'));
+const CertificatesManager = React.lazy(() => import('./pages/admin/CertificatesManager'));
+const NotificationsPage = React.lazy(() => import('./pages/admin/NotificationsPage'));
+const SettingsPage = React.lazy(() => import('./pages/admin/SettingsPage'));
+
+// Main layout with Navbar and Footer for public pages
+const MainLayout = ({ darkMode, toggleDarkMode }) => {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+      <main className="flex-grow">
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+// Loading fallback for lazy loaded components
+const LoadingFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+);
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
-    // Check for saved theme preference or default to light mode
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
@@ -47,10 +75,10 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen flex flex-col">
-          <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-          <main className="flex-grow">
-            <Routes>
+        <React.Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            {/* Public routes with Navbar/Footer */}
+            <Route element={<MainLayout darkMode={darkMode} toggleDarkMode={toggleDarkMode} />}>
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/events" element={<Events />} />
@@ -60,12 +88,8 @@ function App() {
               <Route path="/blog" element={<Blog />} />
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/contact" element={<Contact />} />
-
-              {/* Auth Routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-
-              {/* Protected Routes */}
               <Route
                 path="/profile"
                 element={
@@ -74,20 +98,28 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+            </Route>
 
-              {/* Admin Routes */}
-              <Route
-                path="/admin/dashboard"
-                element={
-                  <ProtectedRoute adminOnly>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
+            {/* Admin routes - separate layout */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute adminOnly>
+                  <AdminLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<DashboardHome />} />
+              <Route path="dashboard" element={<DashboardHome />} />
+              <Route path="events" element={<EventsManager />} />
+              <Route path="members" element={<MembersManager />} />
+              <Route path="emails" element={<EmailCenter />} />
+              <Route path="certificates" element={<CertificatesManager />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+            </Route>
+          </Routes>
+        </React.Suspense>
       </Router>
     </AuthProvider>
   );
