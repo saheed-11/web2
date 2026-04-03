@@ -37,7 +37,7 @@ const PaymentsTab = ({ event }) => {
       const response = await axios.get(`${API_URL}/admin/events/${event._id}/payments`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setPayments(response.data);
+      setPayments(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching payments:', error);
       setPayments([]);

@@ -143,14 +143,14 @@ const AnalyticsTab = ({ event }) => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <MetricCard
           label="Total Registrations"
-          value={analytics.totalRegistrations}
+          value={analytics.totalRegistrations || 0}
           icon={Users}
           color="blue"
           trend="+12%"
         />
         <MetricCard
           label="Revenue Generated"
-          value={`₹${analytics.totalRevenue.toLocaleString()}`}
+          value={`₹${(analytics.totalRevenue || 0).toLocaleString()}`}
           icon={IndianRupee}
           color="green"
           trend="+8%"
@@ -158,14 +158,14 @@ const AnalyticsTab = ({ event }) => {
         <MetricCard
           label="IEEE Members"
           value={`${Math.round(
-            (analytics.ieeeMembershipRatio.members / analytics.totalRegistrations) * 100
+            ((analytics.ieeeMembershipRatio?.members || 0) / (analytics.totalRegistrations || 1)) * 100
           )}%`}
           icon={CheckCircle}
           color="purple"
         />
         <MetricCard
           label="Completion Rate"
-          value={`${analytics.completionRate}%`}
+          value={`${analytics.completionRate || 0}%`}
           icon={TrendingUp}
           color="orange"
         />
@@ -204,10 +204,10 @@ const AnalyticsTab = ({ event }) => {
           </h3>
           <PieChart
             data={[
-              { name: 'IEEE Members', value: analytics.ieeeMembershipRatio.members, color: '#0066CC' },
+              { name: 'IEEE Members', value: analytics.ieeeMembershipRatio?.members || 0, color: '#0066CC' },
               {
                 name: 'Non-IEEE Members',
-                value: analytics.ieeeMembershipRatio.nonMembers,
+                value: analytics.ieeeMembershipRatio?.nonMembers || 0,
                 color: '#64748b',
               },
             ]}
@@ -221,9 +221,9 @@ const AnalyticsTab = ({ event }) => {
           </h3>
           <StackedBarChart
             data={[
-              { name: 'Paid', value: analytics.paymentStatus.paid, color: '#10b981' },
-              { name: 'Pending', value: analytics.paymentStatus.pending, color: '#f59e0b' },
-              { name: 'Rejected', value: analytics.paymentStatus.rejected, color: '#ef4444' },
+              { name: 'Paid', value: analytics.paymentStatus?.paid || 0, color: '#10b981' },
+              { name: 'Pending', value: analytics.paymentStatus?.pending || 0, color: '#f59e0b' },
+              { name: 'Rejected', value: analytics.paymentStatus?.rejected || 0, color: '#ef4444' },
             ]}
           />
         </div>
@@ -235,8 +235,8 @@ const AnalyticsTab = ({ event }) => {
           </h3>
           <PieChart
             data={[
-              { name: 'Mobile', value: analytics.deviceBreakdown.mobile, color: '#8b5cf6' },
-              { name: 'Desktop', value: analytics.deviceBreakdown.desktop, color: '#3b82f6' },
+              { name: 'Mobile', value: analytics.deviceBreakdown?.mobile || 0, color: '#8b5cf6' },
+              { name: 'Desktop', value: analytics.deviceBreakdown?.desktop || 0, color: '#3b82f6' },
             ]}
           />
         </div>
@@ -270,7 +270,11 @@ const MetricCard = ({ label, value, icon: Icon, color, trend }) => {
 };
 
 const LineChart = ({ data }) => {
-  const maxValue = Math.max(...data.map((d) => d.count));
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return <div className="h-64 flex items-center justify-center text-slate-500">No data available</div>;
+  }
+
+  const maxValue = Math.max(...data.map((d) => d.count)) || 1;
 
   return (
     <div className="space-y-4">
@@ -296,7 +300,7 @@ const LineChart = ({ data }) => {
             d={`M ${data
               .map(
                 (d, i) =>
-                  `${(i * 800) / (data.length - 1)} ${250 - (d.count / maxValue) * 230}`
+                  `${(i * 800) / (data.length - 1 || 1)} ${250 - ((d.count || 0) / maxValue) * 230}`
               )
               .join(' L ')}`}
             fill="none"
@@ -309,7 +313,7 @@ const LineChart = ({ data }) => {
             d={`M ${data
               .map(
                 (d, i) =>
-                  `${(i * 800) / (data.length - 1)} ${250 - (d.count / maxValue) * 230}`
+                  `${(i * 800) / (data.length - 1 || 1)} ${250 - ((d.count || 0) / maxValue) * 230}`
               )
               .join(' L ')} L 800 250 L 0 250 Z`}
             fill="url(#gradient)"
@@ -320,8 +324,8 @@ const LineChart = ({ data }) => {
           {data.map((d, i) => (
             <circle
               key={i}
-              cx={(i * 800) / (data.length - 1)}
-              cy={250 - (d.count / maxValue) * 230}
+              cx={(i * 800) / (data.length - 1 || 1)}
+              cy={250 - ((d.count || 0) / maxValue) * 230}
               r="4"
               fill="#0066CC"
             />
@@ -350,7 +354,11 @@ const LineChart = ({ data }) => {
 };
 
 const DonutChart = ({ data }) => {
-  const total = data.reduce((sum, item) => sum + item.value, 0);
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return <div className="h-48 flex items-center justify-center text-slate-500">No data available</div>;
+  }
+
+  const total = data.reduce((sum, item) => sum + (item.value || 0), 0) || 1;
   const colors = ['#0066CC', '#8b5cf6', '#f59e0b', '#10b981', '#64748b'];
 
   return (
@@ -423,7 +431,11 @@ const DonutSlice = ({ startAngle, angle, color, innerRadius, outerRadius }) => {
 };
 
 const BarChart = ({ data }) => {
-  const maxValue = Math.max(...data.map((d) => d.value));
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return <div className="h-48 flex items-center justify-center text-slate-500">No data available</div>;
+  }
+
+  const maxValue = Math.max(...data.map((d) => d.value || 0)) || 1;
   const colors = ['#0066CC', '#8b5cf6', '#f59e0b', '#10b981'];
 
   return (
@@ -450,7 +462,11 @@ const BarChart = ({ data }) => {
 };
 
 const PieChart = ({ data }) => {
-  const total = data.reduce((sum, item) => sum + item.value, 0);
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return <div className="h-48 flex items-center justify-center text-slate-500">No data available</div>;
+  }
+
+  const total = data.reduce((sum, item) => sum + (item.value || 0), 0) || 1;
 
   return (
     <div className="space-y-4">
@@ -500,7 +516,11 @@ const PieSlice = ({ startAngle, angle, color }) => {
 };
 
 const StackedBarChart = ({ data }) => {
-  const total = data.reduce((sum, item) => sum + item.value, 0);
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return <div className="h-48 flex items-center justify-center text-slate-500">No data available</div>;
+  }
+
+  const total = data.reduce((sum, item) => sum + (item.value || 0), 0) || 1;
 
   return (
     <div className="space-y-4">
