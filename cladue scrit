@@ -1,0 +1,437 @@
+You are a senior full-stack developer and UI/UX designer working on an IEEE college 
+chapter website. Completely rebuild the Admin Dashboard Event Management module into 
+a professional, scalable system with dynamic forms, analytics, UPI payments, 
+certificate management, and a post-event review system.
+
+---
+
+## CURRENT STATE (What Exists)
+- Events displayed in a list/grid on the dashboard
+- Editing done via a small popup modal in the corner
+- No dedicated event page, no form builder, no analytics
+- No payment system, no participant management, no certificates
+
+---
+
+## GOAL
+Build a system comparable to:
+- Google Forms (form builder)
+- MakeMyPass (event handling)  
+- Razorpay / UPI deep link flow (India-friendly payments)
+- Notion (clean UI structure)
+
+---
+
+## SECTION 1 — UPDATED EVENT CARDS (Dashboard View)
+
+Replace the existing event grid/list cards with:
+- Clean card with: event banner thumbnail, title, date, venue, status badge
+  (Draft / Published / Closed / Completed)
+- Registration count with a capacity progress bar (e.g., 47/100)
+- "Days until event" countdown chip
+- Filter tabs above the grid: All / Upcoming / Past / Draft / Archived
+- "Create Event" button → opens multi-step wizard (see Section 6)
+
+---
+
+## SECTION 2 — DEDICATED EVENT PAGE (Route: /dashboard/events/[eventId])
+
+When an admin clicks an event card → navigate to a FULL dedicated page (no modal).
+
+The page has a topBAR with these tabs:
+1. Overview
+2. Form Builder
+3. Responses
+4. Payments
+5. Analytics
+6. Review & Certificates
+7. Settings
+
+---
+
+### TAB 1 — OVERVIEW
+- Event banner image upload (drag & drop)
+- Event title (inline editable)
+- Rich text description editor (bold, italic, lists, links)
+- Date & time picker (start + end)
+- Venue (text input) OR Online toggle with meeting link field
+- Event type tags: Workshop / Seminar / Hackathon / Webinar / Other
+- Registration deadline picker
+- Max participants input with live "X registered / Y total" counter
+- Status toggle: Draft → Published → Closed → Completed
+- Shareable public registration link with copy button
+- Save & Publish button
+
+---
+
+### TAB 2 — FORM BUILDER (Google Forms style)
+
+Drag-and-drop form builder with the following field types:
+- Short Text
+- Paragraph / Long Text
+- Multiple Choice (Radio buttons)
+- Checkboxes (multi-select)
+- Dropdown
+- Date Picker
+- File Upload (PDF, image — max size configurable)
+- Email (auto-filled if user is logged in, with validation)
+- Phone Number (with India +91 default, validation)
+- IEEE Member ID (with optional validation toggle)
+
+Each field has:
+- Label, placeholder text, helper/hint text
+- Required / Optional toggle
+- Conditional logic: "Show this field only if [Field X] equals [Value Y]"
+
+Additional features:
+- Reorder fields via drag and drop
+- Duplicate a field
+- Preview mode (see form exactly as registrants see it)
+- "Copy Registration Link" button
+
+---
+
+### TAB 3 — RESPONSES (Registered Participants)
+
+Full table view with columns:
+Name | Email | Dept | Year | IEEE ID | Registered At | Payment Status | Check-in
+
+Features:
+- Search bar + column-wise filters
+- Click any row → expand to see all form responses for that participant
+- Unique Registration ID auto-generated per participant (e.g., IEEE-EVT-2025-0047)
+- Duplicate registration detection (same email = blocked with warning)
+- Status badges: Confirmed / Waitlisted / Cancelled / Pending Payment
+- Bulk actions toolbar:
+  → Export CSV
+  → Send Bulk Email
+  → Mark Attendance
+  → Delete Selected
+- CSV import for manual participant addition
+- Waitlist auto-promotion: when a registered spot opens, next waitlisted 
+  participant is auto-notified and promoted
+- QR code per participant for event-day check-in
+- Live check-in view (event day mode): real-time list showing who has checked in
+
+---
+
+### TAB 4 — PAYMENTS
+
+#### Pricing Configuration (inside event settings, shown here):
+- Free Event toggle (disables all payment fields when ON)
+- IEEE Member Price (INR input)
+- Non-IEEE Member Price (INR input)
+- During registration: user selects IEEE / Non-IEEE → correct price shown dynamically
+
+#### UPI Payment Flow (Deep Link Based — India-friendly, no heavy gateway):
+
+Generate a dynamic UPI deep link per registration:
+  upi://pay?pa=<ADMIN_UPI_ID>&pn=<ORG_NAME>&am=<AMOUNT>&cu=INR&tn=<EVENT>-<REG_ID>
+
+"Pay Now" button opens:
+  - Google Pay
+  - PhonePe  
+  - Paytm
+  (use UPI intent URLs / deep links for each app)
+
+QR Code fallback: generate a scannable UPI QR code for desktop users
+
+After payment, student must:
+  - Upload payment screenshot (image upload field), OR
+  - Enter Transaction ID / UTR number manually
+
+#### Admin Payment Verification Panel (inside this tab):
+- Table: Name | Amount | Transaction ID | Screenshot | Submitted At | Status
+- Per row actions: Approve ✅ | Reject ❌ | Request Re-upload
+- Rejected payments: student gets notified and can re-submit proof
+- Registration is CONFIRMED only after admin approval
+- Bulk approve option for trusted participants
+- Revenue summary: Total collected | Pending | Rejected
+
+---
+
+### TAB 5 — ANALYTICS
+
+Display the following with charts:
+- Total registrations (large stat card)
+- Revenue generated (total approved payments in INR)
+- Registrations over time — line chart (daily / weekly toggle)
+- Department-wise breakdown — donut chart
+- Year of study breakdown — bar chart
+- IEEE Member vs Non-IEEE ratio — donut chart
+- Payment status breakdown — Paid / Pending / Rejected (stacked bar)
+- Form completion rate — started vs fully submitted
+- Device type — mobile vs desktop (donut)
+- Export analytics as PDF or PNG button
+
+---
+
+### TAB 6 — REVIEW & CERTIFICATES ⭐ (Key Feature)
+
+This tab has two sub-sections:
+
+---
+
+#### SUB-SECTION A — Review Form Builder (Admin side)
+
+Admin builds a post-event review/feedback form using the same drag-and-drop
+field builder as the registration form. Suggested default fields:
+- Overall event rating (Star rating 1–5)
+- What did you like most? (Paragraph)
+- What could be improved? (Paragraph)
+- Would you attend future IEEE events? (Yes / No / Maybe)
+- Any additional comments (Paragraph)
+
+Admin can add/remove/edit fields freely.
+Admin sets a "Review Submission Deadline" date.
+
+---
+
+#### SUB-SECTION B — Certificate Management via Google Drive (Admin side)
+
+WORKFLOW:
+Admin uploads all participant certificates to a designated Google Drive folder.
+Each certificate PDF must be named using the student's registered name:
+  Format: firstname_lastname.pdf  (e.g., john_doe.pdf, amal_thomas.pdf)
+
+Admin Panel UI:
+- Input field: "Google Drive Folder ID or URL" → admin pastes the Drive folder link
+- "Sync Certificates" button → triggers the sync process:
+    1. Calls Google Drive API to list all files in the specified folder
+    2. Parses each filename (strips .pdf, converts underscores to spaces)
+    3. Matches each file to a registered participant in the database
+       (match by: normalized full name OR fallback to email parsed from filename
+        e.g., john_doe@college.edu → john_doe.pdf)
+    4. Stores the Google Drive direct download URL for each matched participant:
+       Format: https://drive.google.com/uc?export=download&id=<FILE_ID>
+    5. Updates participant certificate status in the database
+
+Certificate Status Column in Participants Table:
+  - ✅ Available — certificate matched and URL stored
+  - ⏳ Review Pending — participant hasn't submitted review yet
+  - ❌ Not Uploaded — no matching file found in Drive folder
+  - 🔒 Locked — confirmed but review not yet submitted
+
+Admin Controls:
+- View sync log: list of matched files, unmatched files, and skipped duplicates
+- Re-sync button: re-run the mapping process after uploading new certificates
+- Manual override per participant:
+    → Paste a direct certificate URL manually for edge cases
+    → "Bypass review requirement" checkbox (unlocks certificate without review)
+- Duplicate name handling:
+    → If two students share the same name, flag as conflict in sync log
+    → Admin manually resolves by assigning correct file to each participant
+
+Edge Case Handling (instruct Claude to implement all of these):
+- Unmatched files (no student found for that filename) → logged in sync report
+- Missing certificates (student exists but no file found) → status = Not Uploaded
+- Duplicate filenames in Drive → flagged, admin picks correct one
+- Names with special characters or middle names → normalize before matching
+  (strip accents, lowercase, trim spaces, ignore middle names as fallback)
+- Students who change names after registration → manual URL assignment by admin
+
+Google Drive API Setup Notes (include in code):
+- Use Google Drive API v3 with a Service Account (no OAuth popup for admin)
+- Store Service Account credentials in environment variables (.env):
+    GOOGLE_SERVICE_ACCOUNT_EMAIL=...
+    GOOGLE_PRIVATE_KEY=...
+    GOOGLE_DRIVE_FOLDER_ID=...
+- The Drive folder must be shared with the service account email
+- Scope required: https://www.googleapis.com/auth/drive.readonly
+- Convert file ID to direct downloadable link:
+    https://drive.google.com/uc?export=download&id=<FILE_ID>
+
+---
+
+#### CERTIFICATE UNLOCK LOGIC (Critical Rule)
+
+🔒 A participant's certificate download is LOCKED until BOTH conditions are met:
+  1. Registration status = Confirmed (payment approved if paid event)
+  2. Post-event review form submitted
+
+Lock states shown to student:
+  → "Complete the feedback form to unlock your certificate"
+  → "Your registration is pending payment approval"
+  → "Certificate not yet published by the organizer"
+
+Once BOTH conditions are met AND admin has synced the certificate:
+  - Download button is UNLOCKED in student portal
+  - Student receives automated email: "Your certificate is ready to download!"
+  - Clicking download → backend verifies ownership → redirects to Drive URL
+  - Direct Drive link is NEVER exposed to frontend (always proxied via backend)
+    to prevent students from sharing/accessing others' certificates
+
+---
+
+#### SUB-SECTION C — Student Portal (Certificate Download)
+
+In the student's "My Registrations" dashboard, for each past event:
+- Show event name, date, and a certificate status chip:
+    ✅ Download Certificate  (button — active when unlocked)
+    📝 Submit Review to Unlock  (button — redirects to review form)
+    ⏳ Certificate Not Yet Published  (greyed out, no action)
+    🔒 Pending Payment Approval  (greyed out)
+
+Download flow (secure):
+  1. Student clicks "Download Certificate"
+  2. Frontend calls: GET /api/certificates/download?eventId=xxx
+  3. Backend checks:
+       - Is user authenticated? (session/JWT check)
+       - Does a certificate URL exist for this user + event?
+       - Is review submitted?
+       - Is payment confirmed?
+  4. If all pass → backend returns the Drive download URL as a redirect
+  5. If any fail → return 403 with specific reason message
+
+Security rules:
+  - Certificate URLs are NEVER stored in frontend state or localStorage
+  - All certificate access goes through the authenticated backend route
+  - Rate limit the download endpoint (max 10 downloads/hour per user)
+  - Log every download attempt (userId, eventId, timestamp, IP)
+
+---
+
+DATABASE SCHEMA UPDATES for Certificates:
+
+Add to Registration model:
+  certificateUrl: String (Google Drive direct download URL)
+  certificateStatus: Enum ['not_uploaded', 'locked', 'review_pending', 'available']
+  certificateUnlockedAt: Date
+  adminOverride: Boolean (default: false)
+
+Add Certificate Sync Log model:
+  eventId, syncedAt, syncedBy (adminId),
+  matchedCount, unmatchedFiles: [{ filename, reason }],
+  conflictFiles: [{ filename, candidates: [participantIds] }]
+
+#### CERTIFICATE UNLOCK LOGIC (Critical Rule):
+🔒 A participant can download their certificate ONLY IF:
+  1. Their registration status = Confirmed (payment approved if paid event)
+  2. They have submitted the post-event review form
+
+If either condition is NOT met:
+  - Certificate download button is LOCKED with a tooltip:
+    → "Complete the feedback form to unlock your certificate"
+    OR
+    → "Your registration is pending payment approval"
+
+Once BOTH conditions are met:
+  - Certificate download button is UNLOCKED
+  - Participant receives an automated email: "Your certificate is ready!"
+  - They can download as PDF from their profile / public event page
+
+Admin override: Admin can manually unlock certificate for specific participants
+  (checkbox: "Bypass review requirement for this participant")
+
+---
+
+## SECTION 3 — PARTICIPANT (STUDENT) FACING SIDE
+
+Public event registration page (non-dashboard):
+- View event details: banner, description, date, venue
+- Registration form (built by admin via Form Builder)
+- Payment flow (UPI deep link / QR code)
+- After registration: confirmation page with unique Registration ID
+- "My Registrations" section in student profile:
+  - List of events registered for
+  - Payment status per event
+  - Review Form button (appears after event ends)
+  - Certificate Download button (locked/unlocked based on review submission)
+
+---
+
+## SECTION 4 — AUTOMATION & NOTIFICATIONS
+
+Trigger automated emails for:
+1. Registration submitted → "Thanks for registering! Your ID: IEEE-EVT-2025-XXXX"
+2. Payment received (screenshot uploaded) → "We've received your payment proof, 
+   verification in progress."
+3. Payment approved → "Your registration is confirmed!"
+4. Payment rejected → "Payment proof rejected. Please re-upload."
+5. Event reminder → 1 day before + 1 hour before event
+6. Post-event → "Please fill the review form to unlock your certificate"
+7. Certificate unlocked → "Your certificate is ready to download!"
+
+Optional: WhatsApp notification using Meta Cloud API or Twilio (same triggers)
+
+---
+
+## SECTION 5 — CREATE EVENT WIZARD
+
+Multi-step wizard when admin clicks "Create Event":
+- Step 1: Basic Info (title, type, date, venue)
+- Step 2: Form Builder (registration questions)
+- Step 3: Pricing & Payment (free / IEEE / Non-IEEE pricing, UPI ID)
+- Step 4: Review Form setup (post-event feedback form)
+- Step 5: Certificate template upload & placeholder mapping
+- Step 6: Review all settings → Publish or Save as Draft
+
+Allow saving as draft at any step.
+"Duplicate Event" clones all settings, form, pricing, and review form.
+
+---
+
+## SECTION 6 — ADVANCED / SMART FEATURES
+
+- Auto-generate unique UPI payment note per registration (includes reg ID)
+- Smart duplicate detection: block same email from registering twice per event
+- Role-based access: Admin (full access) / Coordinator (view + check-in only)
+- Manual payment override by admin (mark as paid without screenshot)
+- Suggest pricing based on past similar events (simple average)
+- Unpaid registration tracker with "nudge" email button
+- Post-event leaderboard: most events attended by a student
+- Digital badges: auto-award "First Workshop", "5 Events Attended", etc.
+- Team registration mode (for hackathons): group of 2–5, one payment, 
+  one team registration ID
+
+---
+
+## TECH STACK (REPLACE THIS WITH YOUR ACTUAL STACK)
+- Frontend: Next.js 14 + TypeScript + Tailwind CSS
+- UI Library: shadcn/ui / MUI / Chakra (specify yours)
+- Backend: Next.js API routes / Node.js + Express (specify yours)
+- Database: MongoDB / PostgreSQL / Supabase / Firebase (specify yours)
+- Auth: NextAuth / Firebase Auth / Clerk (specify yours)
+- File Storage: Cloudinary / AWS S3 / Supabase Storage (for screenshots, 
+  banners, certificates)
+- Email: Nodemailer / Resend / SendGrid (specify yours)
+
+---
+
+## DATABASE MODELS NEEDED
+
+Design and suggest schemas for:
+- Event (title, description, date, venue, status, capacity, pricing config, 
+  UPI ID, form schema ref, review form schema ref, certificate template ref)
+- FormSchema (fields array with type, label, options, required, conditionals)
+- Registration (eventId, userId, answers, registrationId, paymentStatus, 
+  transactionId, screenshotUrl, reviewSubmitted, certificateUnlocked)
+- Payment (registrationId, amount, upiRef, screenshotUrl, status, 
+  verifiedBy, verifiedAt)
+- Review (registrationId, eventId, userId, answers, submittedAt)
+- Certificate (registrationId, eventId, generatedAt, downloadUrl, 
+  unlockedAt, adminOverride)
+
+---
+
+## INSTRUCTIONS FOR CLAUDE CODE
+
+1. First scan all existing event-related files and components in the project
+2. Show the complete folder/file structure you'll create or modify BEFORE writing code
+3. Reuse existing components, theme tokens, and design system from the project
+4. Build tab by tab — start with routing + Overview, then each tab incrementally
+5. Every section needs: loading state, empty state, error boundary
+6. Mobile-first responsive design (UPI payment flow especially must work on phone)
+7. Clean, typed TypeScript with JSDoc comments on complex functions
+8. Keep it lightweight — no heavy payment SDKs, UPI deep links only
+9. Avoid all modal popups — use full pages and slide-in panels instead
+10. After each major section, pause and ask if I want changes before continuing
+
+---
+
+## UI/UX REFERENCES
+- Layout style: Notion / Linear
+- Form builder: Google Forms
+- Event management: MakeMyPass
+- Payment flow: lightweight Razorpay-style but UPI-only
+- Clean, minimal, professional — fitting for an IEEE technical chapter
