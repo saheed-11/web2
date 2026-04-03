@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Clock, Users, ChevronLeft, CheckCircle, Loader, ArrowRight } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users, ChevronLeft, CheckCircle, Loader, ArrowRight, Monitor, Video, Tag } from 'lucide-react';
 import { eventService, authService } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/ToastContainer';
+import RegistrationForm from '../components/RegistrationForm';
 
 const EventDetail = () => {
   const { eventId } = useParams();
@@ -16,6 +17,7 @@ const EventDetail = () => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
+  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
 
   useEffect(() => {
     fetchEvent();
@@ -41,6 +43,13 @@ const EventDetail = () => {
       return;
     }
 
+    // Check if event has custom fields - if so, show the form
+    if (event.customFields && event.customFields.length > 0) {
+      setShowRegistrationForm(true);
+      return;
+    }
+
+    // Otherwise, do simple registration
     setRegistering(true);
 
     try {
@@ -59,6 +68,36 @@ const EventDetail = () => {
         };
         localStorage.setItem('user', JSON.stringify(updatedUser));
       }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Failed to register';
+      showError(errorMsg);
+    } finally {
+      setRegistering(false);
+    }
+  };
+
+  const handleFormSubmit = async (registrationData) => {
+    setRegistering(true);
+
+    try {
+      const result = await eventService.registerForEventWithForm(eventId, registrationData);
+      showSuccess(result.message || 'Successfully registered for event!');
+
+      // Refresh event to update attendee count
+      await fetchEvent();
+
+      // Update user profile in context
+      if (currentUser) {
+        const updatedProfile = await authService.getProfile();
+        const updatedUser = {
+          ...currentUser,
+          registeredEvents: updatedProfile.registeredEvents
+        };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+
+      // Hide form and show success
+      setShowRegistrationForm(false);
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Failed to register';
       showError(errorMsg);
@@ -117,11 +156,19 @@ const EventDetail = () => {
           Back to Events
         </Link>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden"
-        >
+        {showRegistrationForm ? (
+          <RegistrationForm
+            event={event}
+            onSubmit={handleFormSubmit}
+            onCancel={() => setShowRegistrationForm(false)}
+            loading={registering}
+          />
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden"
+          >
           {/* Event Image */}
           <div className="relative h-96 w-full overflow-hidden">
             <img
@@ -214,6 +261,114 @@ const EventDetail = () => {
               </p>
             </div>
 
+            {/* Event Mode and Meeting Link */}
+            {event.mode && (event.mode === 'online' || event.mode === 'hybrid') && (
+              <div className="mb-8">
+                <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+                  <Video className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                      {event.mode === 'online' ? 'Online Event' : 'Hybrid Event'}
+                    </p>
+                    {event.meetingLink && (
+                      <a
+                        href={event.meetingLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                      >
+                        Join Meeting Link
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tags */}
+            {event.tags && event.tags.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                  <Tag className="w-5 h-5" />
+                  Tags
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {event.tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full text-sm"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Speakers */}
+            {event.speakers && event.speakers.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                  Speakers
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {event.speakers.map((speaker, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-700 rounded-xl"
+                    >
+                      {speaker.image && (
+                        <img
+                          src={speaker.image}
+                          alt={speaker.name}
+                          className="w-16 h-16 rounded-full object-cover"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-slate-900 dark:text-white">
+                          {speaker.name}
+                        </h4>
+                        {speaker.designation && (
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            {speaker.designation}
+                          </p>
+                        )}
+                        {speaker.organization && (
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            {speaker.organization}
+                          </p>
+                        )}
+                        {speaker.bio && (
+                          <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">
+                            {speaker.bio}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Pricing Information */}
+            {event.pricing && !event.pricing.isFree && (
+              <div className="mb-8">
+                <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl">
+                  <h3 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-2">
+                    Registration Fee
+                  </h3>
+                  <div className="space-y-1 text-sm text-yellow-800 dark:text-yellow-200">
+                    <p>
+                      IEEE Members: {event.pricing.currency} {event.pricing.ieeeMemberPrice}
+                    </p>
+                    <p>
+                      Non-IEEE Members: {event.pricing.currency} {event.pricing.nonIeeeMemberPrice}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Registration Button */}
             <div className="flex justify-center">
               {isRegistered() ? (
@@ -267,6 +422,7 @@ const EventDetail = () => {
             </div>
           </div>
         </motion.div>
+        )}
       </div>
     </div>
   );
