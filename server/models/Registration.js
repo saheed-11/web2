@@ -22,13 +22,48 @@ const registrationSchema = new mongoose.Schema({
     ref: 'Event',
     required: true,
   },
+  // Unique registration ID (e.g., IEEE-EVT-2025-0047)
+  registrationId: {
+    type: String,
+    unique: true,
+    required: true,
+  },
   // Custom form responses
   formResponses: [fieldResponseSchema],
   // Registration status
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'cancelled', 'waitlist'],
+    enum: ['pending', 'confirmed', 'cancelled', 'waitlist', 'pending_payment'],
     default: 'confirmed',
+  },
+  // IEEE membership info (captured during registration)
+  isIeeeMember: {
+    type: Boolean,
+    default: false,
+  },
+  ieeeId: String,
+  // Payment information
+  payment: {
+    required: {
+      type: Boolean,
+      default: false,
+    },
+    amount: Number,
+    status: {
+      type: String,
+      enum: ['pending', 'submitted', 'approved', 'rejected', 'not_required'],
+      default: 'not_required',
+    },
+    transactionId: String,
+    utrNumber: String,
+    screenshotUrl: String,
+    submittedAt: Date,
+    verifiedAt: Date,
+    verifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    rejectionReason: String,
   },
   // Attendance
   attended: {
@@ -37,11 +72,37 @@ const registrationSchema = new mongoose.Schema({
   },
   checkInTime: Date,
   checkOutTime: Date,
-  // Certificate
-  certificateUrl: String,
-  certificateEmailSent: {
+  checkInQrScanned: {
     type: Boolean,
     default: false,
+  },
+  // Certificate information
+  certificate: {
+    status: {
+      type: String,
+      enum: ['not_uploaded', 'locked', 'review_pending', 'available'],
+      default: 'not_uploaded',
+    },
+    url: String, // Google Drive direct download URL
+    unlockedAt: Date,
+    adminOverride: {
+      type: Boolean,
+      default: false,
+    },
+    downloadCount: {
+      type: Number,
+      default: 0,
+    },
+    lastDownloadedAt: Date,
+  },
+  // Review/Feedback (post-event)
+  review: {
+    submitted: {
+      type: Boolean,
+      default: false,
+    },
+    responses: [fieldResponseSchema],
+    submittedAt: Date,
   },
   // Email tracking
   confirmationEmailSent: {
@@ -51,16 +112,6 @@ const registrationSchema = new mongoose.Schema({
   reminderEmailSent: {
     type: Boolean,
     default: false,
-  },
-  // Feedback
-  feedback: {
-    rating: {
-      type: Number,
-      min: 1,
-      max: 5,
-    },
-    comment: String,
-    submittedAt: Date,
   },
   // Timestamps
   registeredAt: {
@@ -76,9 +127,21 @@ const registrationSchema = new mongoose.Schema({
 // Compound index to ensure unique registration per user per event
 registrationSchema.index({ user: 1, event: 1 }, { unique: true });
 
-// Pre-save middleware
-registrationSchema.pre('save', function(next) {
+/**
+ * Pre-save middleware to generate unique registration ID and update timestamp
+ * Format: IEEE-EVT-YYYY-XXXX (e.g., IEEE-EVT-2025-0047)
+ */
+registrationSchema.pre('save', async function(next) {
   this.updatedAt = new Date();
+
+  // Generate registration ID if not already set
+  if (!this.registrationId) {
+    const year = new Date().getFullYear();
+    const count = await this.constructor.countDocuments({ event: this.event });
+    const paddedCount = String(count + 1).padStart(4, '0');
+    this.registrationId = `IEEE-EVT-${year}-${paddedCount}`;
+  }
+
   next();
 });
 

@@ -22,6 +22,7 @@ import './styles/index.css';
 const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
 const DashboardHome = React.lazy(() => import('./pages/admin/DashboardHome'));
 const EventsManager = React.lazy(() => import('./pages/admin/EventsManager'));
+const EventDetailPage = React.lazy(() => import('./pages/admin/EventDetailPage'));
 const MembersManager = React.lazy(() => import('./pages/admin/MembersManager'));
 const EmailCenter = React.lazy(() => import('./pages/admin/EmailCenter'));
 const CertificatesManager = React.lazy(() => import('./pages/admin/CertificatesManager'));
@@ -112,6 +113,7 @@ function App() {
               <Route index element={<DashboardHome />} />
               <Route path="dashboard" element={<DashboardHome />} />
               <Route path="events" element={<EventsManager />} />
+              <Route path="events/:eventId" element={<EventDetailPage />} />
               <Route path="members" element={<MembersManager />} />
               <Route path="emails" element={<EmailCenter />} />
               <Route path="certificates" element={<CertificatesManager />} />

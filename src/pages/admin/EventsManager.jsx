@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   Plus,
   Search,
@@ -48,7 +49,7 @@ const StatusBadge = ({ status }) => {
 };
 
 // Event Card Component
-const EventCard = ({ event, onEdit, onDelete, onToggleRegistration, onGenerateQR }) => {
+const EventCard = ({ event, onEdit, onDelete, onToggleRegistration, onGenerateQR, onViewDetails }) => {
   const [showMenu, setShowMenu] = useState(false);
 
   return (
@@ -57,7 +58,8 @@ const EventCard = ({ event, onEdit, onDelete, onToggleRegistration, onGenerateQR
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
+      className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
+      onClick={() => onViewDetails(event)}
     >
       {/* Event Image */}
       <div className="relative h-40 bg-gradient-to-br from-ieee-blue to-ieee-blue-dark overflow-hidden">
@@ -238,6 +240,7 @@ const QRCodeModal = ({ event, qrCode, onClose }) => (
 
 const EventsManager = () => {
   const { toasts, hideToast, showSuccess, showError } = useToast();
+  const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showEventModal, setShowEventModal] = useState(false);
@@ -328,6 +331,10 @@ const EventsManager = () => {
     } catch (error) {
       showError('Failed to update event status');
     }
+  };
+
+  const handleViewDetails = (event) => {
+    navigate(`/admin/events/${event._id}`);
   };
 
   // Filter events
@@ -444,6 +451,7 @@ const EventsManager = () => {
               onDelete={handleDeleteEvent}
               onToggleRegistration={handleToggleRegistration}
               onGenerateQR={handleGenerateQR}
+              onViewDetails={handleViewDetails}
             />
           ))}
         </AnimatePresence>
