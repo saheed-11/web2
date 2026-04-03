@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Loader, Plus, Trash2 } from 'lucide-react';
+import { X, Loader, Plus, Trash2, Tag } from 'lucide-react';
 import { eventService } from '../../services/authService';
 import { getErrorMessage } from '../../utils/helpers';
 
@@ -43,17 +43,29 @@ const EventModal = ({ event, onClose, onSave }) => {
     description: '',
     date: '',
     time: '',
+    endDate: '',
+    endTime: '',
     location: '',
     category: 'Workshop',
     mode: 'offline',
-    status: 'upcoming',
+    meetingLink: '',
+    status: 'draft',
     image: '',
     maxAttendees: 100,
     registrationOpen: true,
+    registrationDeadline: '',
     speakers: [],
+    tags: [],
+    pricing: {
+      isFree: true,
+      ieeeMemberPrice: 0,
+      nonIeeeMemberPrice: 0,
+      currency: 'INR',
+    },
   });
 
   const [newSpeaker, setNewSpeaker] = useState({ name: '', designation: '', organization: '' });
+  const [newTag, setNewTag] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -71,21 +83,65 @@ const EventModal = ({ event, onClose, onSave }) => {
         description: event.description || '',
         date: event.date ? new Date(event.date).toISOString().split('T')[0] : '',
         time: convertTo24Hour(event.time) || '',
+        endDate: event.endDate ? new Date(event.endDate).toISOString().split('T')[0] : '',
+        endTime: convertTo24Hour(event.endTime) || '',
         location: event.location || '',
         category: event.category || event.type || 'Workshop',
         mode: event.mode || 'offline',
-        status: event.status || 'upcoming',
+        meetingLink: event.meetingLink || '',
+        status: event.status || 'draft',
         image: event.image || '',
         maxAttendees: event.maxAttendees || 100,
         registrationOpen: event.registrationOpen !== undefined ? event.registrationOpen : true,
+        registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().split('T')[0] : '',
         speakers: cleanSpeakers,
+        tags: event.tags || [],
+        pricing: {
+          isFree: event.pricing?.isFree !== undefined ? event.pricing.isFree : true,
+          ieeeMemberPrice: event.pricing?.ieeeMemberPrice || 0,
+          nonIeeeMemberPrice: event.pricing?.nonIeeeMemberPrice || 0,
+          currency: event.pricing?.currency || 'INR',
+        },
       });
     }
   }, [event]);
 
   const handleChange = (e) => {
-    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    setFormData({ ...formData, [e.target.name]: value });
+    const { name, value, type, checked } = e.target;
+
+    // Handle nested pricing fields
+    if (name.startsWith('pricing.')) {
+      const pricingField = name.split('.')[1];
+      setFormData({
+        ...formData,
+        pricing: {
+          ...formData.pricing,
+          [pricingField]: type === 'checkbox' ? checked : type === 'number' ? Number(value) : value,
+        },
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: type === 'checkbox' ? checked : value
+      });
+    }
+  };
+
+  const handleAddTag = () => {
+    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
+      setFormData({
+        ...formData,
+        tags: [...formData.tags, newTag.trim()],
+      });
+      setNewTag('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setFormData({
+      ...formData,
+      tags: formData.tags.filter((tag) => tag !== tagToRemove),
+    });
   };
 
   const handleAddSpeaker = () => {
@@ -115,8 +171,9 @@ const EventModal = ({ event, onClose, onSave }) => {
       const dataToSave = {
         ...formData,
         time: convertTo12Hour(formData.time),
+        endTime: formData.endTime ? convertTo12Hour(formData.endTime) : undefined,
       };
-      
+
       if (event) {
         await eventService.updateEvent(event._id, dataToSave);
       } else {
@@ -212,6 +269,34 @@ const EventModal = ({ event, onClose, onSave }) => {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                End Date
+              </label>
+              <input
+                type="date"
+                name="endDate"
+                value={formData.endDate}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-ieee-blue dark:bg-slate-700 dark:text-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                End Time
+              </label>
+              <input
+                type="time"
+                name="endTime"
+                value={formData.endTime}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-ieee-blue dark:bg-slate-700 dark:text-white"
+              />
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Location / Venue *
@@ -269,6 +354,23 @@ const EventModal = ({ event, onClose, onSave }) => {
             </div>
           </div>
 
+          {/* Meeting Link - shown only for online/hybrid events */}
+          {(formData.mode === 'online' || formData.mode === 'hybrid') && (
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Meeting Link
+              </label>
+              <input
+                type="url"
+                name="meetingLink"
+                value={formData.meetingLink}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-ieee-blue dark:bg-slate-700 dark:text-white"
+                placeholder="e.g., https://zoom.us/j/123456789"
+              />
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -280,10 +382,13 @@ const EventModal = ({ event, onClose, onSave }) => {
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-ieee-blue dark:bg-slate-700 dark:text-white"
               >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
                 <option value="upcoming">Upcoming</option>
                 <option value="ongoing">Ongoing</option>
                 <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
+                <option value="archived">Archived</option>
               </select>
             </div>
 
@@ -301,6 +406,19 @@ const EventModal = ({ event, onClose, onSave }) => {
                 className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-ieee-blue dark:bg-slate-700 dark:text-white"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Registration Deadline
+            </label>
+            <input
+              type="date"
+              name="registrationDeadline"
+              value={formData.registrationDeadline}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-ieee-blue dark:bg-slate-700 dark:text-white"
+            />
           </div>
 
           <div>
@@ -375,6 +493,131 @@ const EventModal = ({ event, onClose, onSave }) => {
                 <Plus className="w-4 h-4" />
                 Add Speaker
               </button>
+            </div>
+          </div>
+
+          {/* Tags Section */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Tags
+            </label>
+            <div className="space-y-3">
+              {/* Display existing tags */}
+              {formData.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {formData.tags.map((tag, index) => (
+                    <div
+                      key={index}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-ieee-blue/10 text-ieee-blue rounded-full text-sm"
+                    >
+                      <Tag className="w-3 h-3" />
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="hover:text-ieee-blue-dark"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Add new tag */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Add a tag (e.g., AI, Robotics, Workshop)"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddTag();
+                    }
+                  }}
+                  className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm dark:bg-slate-700 dark:text-white"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddTag}
+                  className="px-4 py-2 text-sm text-ieee-blue hover:bg-ieee-blue/10 rounded-lg transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Pricing Section */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Pricing
+            </label>
+            <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg">
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="isFree"
+                  name="pricing.isFree"
+                  checked={formData.pricing.isFree}
+                  onChange={handleChange}
+                  className="w-4 h-4 text-ieee-blue border-slate-300 rounded focus:ring-ieee-blue"
+                />
+                <label htmlFor="isFree" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Free Event
+                </label>
+              </div>
+
+              {!formData.pricing.isFree && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                      IEEE Member Price
+                    </label>
+                    <input
+                      type="number"
+                      name="pricing.ieeeMemberPrice"
+                      value={formData.pricing.ieeeMemberPrice}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm dark:bg-slate-700 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                      Non-IEEE Member Price
+                    </label>
+                    <input
+                      type="number"
+                      name="pricing.nonIeeeMemberPrice"
+                      value={formData.pricing.nonIeeeMemberPrice}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm dark:bg-slate-700 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                      Currency
+                    </label>
+                    <select
+                      name="pricing.currency"
+                      value={formData.pricing.currency}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm dark:bg-slate-700 dark:text-white"
+                    >
+                      <option value="INR">INR (₹)</option>
+                      <option value="USD">USD ($)</option>
+                      <option value="EUR">EUR (€)</option>
+                      <option value="GBP">GBP (£)</option>
+                    </select>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
