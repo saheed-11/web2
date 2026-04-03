@@ -7,6 +7,8 @@ import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import registrationRoutes from './routes/registrationRoutes.js';
+import analyticsRoutes from './routes/analyticsRoutes.js';
 
 // Load env vars
 dotenv.config();
@@ -30,13 +32,15 @@ app.use(cors({
   credentials: true,
 }));
 
-// Serve static files (for certificates)
+// Serve static files (for certificates and uploads)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/registrations', registrationRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
