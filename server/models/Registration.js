@@ -131,7 +131,7 @@ registrationSchema.index({ user: 1, event: 1 }, { unique: true });
  * Pre-save middleware to generate unique registration ID and update timestamp
  * Format: IEEE-EVT-YYYY-XXXX (e.g., IEEE-EVT-2025-0047)
  */
-registrationSchema.pre('save', async function(next) {
+registrationSchema.pre('save', async function() {
   this.updatedAt = new Date();
 
   // Generate registration ID if not already set
@@ -141,8 +141,6 @@ registrationSchema.pre('save', async function(next) {
     const paddedCount = String(count + 1).padStart(4, '0');
     this.registrationId = `IEEE-EVT-${year}-${paddedCount}`;
   }
-
-  next();
 });
 
 const Registration = mongoose.model('Registration', registrationSchema);
