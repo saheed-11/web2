@@ -8,7 +8,7 @@ const formFieldSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['text', 'email', 'phone', 'textarea', 'dropdown', 'checkbox', 'radio', 'file', 'date', 'number'],
+    enum: ['text', 'email', 'phone', 'textarea', 'dropdown', 'checkbox', 'radio', 'file', 'date', 'number', 'paragraph', 'ieeeId', 'rating'],
     required: true,
   },
   label: {
@@ -16,6 +16,7 @@ const formFieldSchema = new mongoose.Schema({
     required: true,
   },
   placeholder: String,
+  helperText: String, // Additional help text for the field
   required: {
     type: Boolean,
     default: false,
@@ -24,6 +25,25 @@ const formFieldSchema = new mongoose.Schema({
   order: {
     type: Number,
     default: 0,
+  },
+  // Conditional logic: show this field only if another field matches a value
+  conditionalLogic: {
+    enabled: {
+      type: Boolean,
+      default: false,
+    },
+    dependsOnFieldId: String,
+    dependsOnValue: mongoose.Schema.Types.Mixed, // Can be string or array
+  },
+  // File upload specific configuration
+  fileConfig: {
+    maxSizeMB: Number,
+    allowedTypes: [String], // ['pdf', 'jpg', 'png', etc.]
+  },
+  // Validation for IEEE Member ID
+  validateIEEE: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -88,11 +108,11 @@ const eventSchema = new mongoose.Schema({
     type: String,
     default: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
   },
-  // Event status
+  // Event status - Enhanced with Draft and Published states
   status: {
     type: String,
-    enum: ['upcoming', 'ongoing', 'completed', 'cancelled'],
-    default: 'upcoming',
+    enum: ['draft', 'published', 'upcoming', 'ongoing', 'completed', 'cancelled', 'archived'],
+    default: 'draft',
   },
   registrationOpen: {
     type: Boolean,
@@ -107,6 +127,10 @@ const eventSchema = new mongoose.Schema({
   speakers: [speakerSchema],
   // Custom registration form fields
   customFields: [formFieldSchema],
+  // Review/Feedback form fields (post-event)
+  reviewFormFields: [formFieldSchema],
+  // Review submission deadline
+  reviewSubmissionDeadline: Date,
   // Tags for filtering
   tags: [String],
   // Admin notes (internal)
@@ -134,6 +158,49 @@ const eventSchema = new mongoose.Schema({
       default: false,
     },
   }],
+  // Pricing configuration
+  pricing: {
+    isFree: {
+      type: Boolean,
+      default: true,
+    },
+    ieeeMemberPrice: {
+      type: Number,
+      default: 0,
+    },
+    nonIeeeMemberPrice: {
+      type: Number,
+      default: 0,
+    },
+    currency: {
+      type: String,
+      default: 'INR',
+    },
+  },
+  // UPI Payment configuration
+  upiConfig: {
+    upiId: String,
+    payeeName: String,
+  },
+  // Google Drive folder for certificates
+  certificatesDriveFolderId: String,
+  certificatesDriveFolderUrl: String,
+  // Last certificate sync info
+  lastCertificateSync: {
+    syncedAt: Date,
+    syncedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    matchedCount: Number,
+    unmatchedCount: Number,
+  },
+  // Public registration link slug
+  registrationSlug: {
+    type: String,
+    unique: true,
+    sparse: true, // Allow null values to be non-unique
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
