@@ -52,7 +52,7 @@ const EventDetailPage = () => {
   const fetchEvent = async () => {
     try {
       setLoading(true);
-      const data = await eventService.getEventById(eventId);
+      const data = await eventService.getEvent(eventId);
       setEvent(data);
     } catch (error) {
       showError('Failed to load event');
