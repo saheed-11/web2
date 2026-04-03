@@ -854,17 +854,17 @@ export const getEmailLogs = async (req, res) => {
 export const exportUsers = async (req, res) => {
   try {
     const { role, department, year } = req.query;
-    
+
     let query = {};
     if (role && role !== 'all') query.role = role;
     if (department && department !== 'all') query.department = department;
     if (year && year !== 'all') query.year = year;
-    
+
     const users = await User.find(query)
       .select('name email phone department year role createdAt registeredEvents')
       .populate('registeredEvents.event', 'title')
       .lean();
-    
+
     // Format data for CSV
     const exportData = users.map(user => ({
       name: user.name,
@@ -877,9 +877,360 @@ export const exportUsers = async (req, res) => {
       eventsRegistered: user.registeredEvents?.length || 0,
       eventsAttended: user.registeredEvents?.filter(e => e.attended)?.length || 0,
     }));
-    
+
     res.json(exportData);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+// @desc    Get event registrations (Admin endpoint)
+// @route   GET /api/admin/events/:eventId/registrations
+// @access  Private/Admin
+export const getEventRegistrations = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    const registrations = await Registration.find({ event: eventId })
+      .populate('user', 'name email department year phone')
+      .sort({ registeredAt: -1 });
+
+    res.json(registrations);
+  } catch (error) {
+    console.error('Get event registrations error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get event payments (Admin endpoint)
+// @route   GET /api/admin/events/:eventId/payments
+// @access  Private/Admin
+export const getEventPayments = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { status } = req.query;
+
+    let query = { event: eventId, 'payment.required': true };
+
+    if (status) {
+      query['payment.status'] = status;
+    }
+
+    const registrations = await Registration.find(query)
+      .populate('user', 'name email phone department year')
+      .populate('payment.verifiedBy', 'name')
+      .select('user registrationId payment isIeeeMember ieeeId registeredAt status')
+      .sort({ 'payment.submittedAt': -1 });
+
+    // Calculate payment summary
+    const summary = {
+      total: 0,
+      pending: 0,
+      submitted: 0,
+      approved: 0,
+      rejected: 0,
+      totalAmount: 0,
+      collectedAmount: 0,
+    };
+
+    registrations.forEach((reg) => {
+      summary.total += 1;
+
+      if (reg.payment.status === 'pending') summary.pending += 1;
+      else if (reg.payment.status === 'submitted') summary.submitted += 1;
+      else if (reg.payment.status === 'approved') {
+        summary.approved += 1;
+        summary.collectedAmount += reg.payment.amount || 0;
+      }
+      else if (reg.payment.status === 'rejected') summary.rejected += 1;
+
+      summary.totalAmount += reg.payment.amount || 0;
+    });
+
+    res.json({
+      registrations,
+      summary,
+    });
+  } catch (error) {
+    console.error('Get event payments error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get event analytics (Admin endpoint)
+// @route   GET /api/admin/events/:eventId/analytics
+// @access  Private/Admin
+export const getEventAnalytics = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    const event = await Event.findById(eventId);
+
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    const registrations = await Registration.find({ event: eventId }).populate('user');
+
+    // Total registrations
+    const totalRegistrations = registrations.length;
+
+    // Registrations by status
+    const statusBreakdown = registrations.reduce((acc, reg) => {
+      acc[reg.status] = (acc[reg.status] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Payment statistics
+    const paymentStats = {
+      totalCollected: 0,
+      pending: 0,
+      approved: 0,
+      rejected: 0,
+    };
+
+    registrations.forEach((reg) => {
+      if (reg.payment.status === 'approved') {
+        paymentStats.totalCollected += reg.payment.amount || 0;
+        paymentStats.approved += 1;
+      } else if (reg.payment.status === 'pending' || reg.payment.status === 'submitted') {
+        paymentStats.pending += 1;
+      } else if (reg.payment.status === 'rejected') {
+        paymentStats.rejected += 1;
+      }
+    });
+
+    // Department-wise breakdown
+    const departmentBreakdown = registrations.reduce((acc, reg) => {
+      const dept = reg.user?.department || 'Not Specified';
+      acc[dept] = (acc[dept] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Year-wise breakdown
+    const yearBreakdown = registrations.reduce((acc, reg) => {
+      const year = reg.user?.year || 'Not Specified';
+      acc[year] = (acc[year] || 0) + 1;
+      return acc;
+    }, {});
+
+    // IEEE Member vs Non-IEEE
+    const membershipBreakdown = {
+      ieeeMembers: registrations.filter((r) => r.isIeeeMember).length,
+      nonIeeeMembers: registrations.filter((r) => !r.isIeeeMember).length,
+    };
+
+    // Registrations over time (daily)
+    const registrationTimeline = {};
+    registrations.forEach((reg) => {
+      const date = new Date(reg.registeredAt).toISOString().split('T')[0];
+      registrationTimeline[date] = (registrationTimeline[date] || 0) + 1;
+    });
+
+    // Attendance statistics
+    const attendanceStats = {
+      attended: registrations.filter((r) => r.attended).length,
+      notAttended: registrations.filter((r) => !r.attended && r.status === 'confirmed').length,
+    };
+
+    // Review submission rate
+    const reviewStats = {
+      submitted: registrations.filter((r) => r.review.submitted).length,
+      pending: registrations.filter(
+        (r) => !r.review.submitted && r.status === 'confirmed' && new Date() > new Date(event.date)
+      ).length,
+    };
+
+    // Certificate statistics
+    const certificateStats = {
+      available: registrations.filter((r) => r.certificate.status === 'available').length,
+      locked: registrations.filter((r) => r.certificate.status === 'locked').length,
+      reviewPending: registrations.filter((r) => r.certificate.status === 'review_pending').length,
+      notUploaded: registrations.filter((r) => r.certificate.status === 'not_uploaded').length,
+      totalDownloads: registrations.reduce((sum, r) => sum + (r.certificate.downloadCount || 0), 0),
+    };
+
+    // Form completion rate
+    const formCompletionRate =
+      totalRegistrations > 0
+        ? (registrations.filter((r) => r.formResponses && r.formResponses.length > 0).length /
+            totalRegistrations) *
+          100
+        : 0;
+
+    res.json({
+      event: {
+        id: event._id,
+        title: event.title,
+        date: event.date,
+        maxAttendees: event.maxAttendees,
+      },
+      summary: {
+        totalRegistrations,
+        capacity: event.maxAttendees,
+        capacityPercentage: (totalRegistrations / event.maxAttendees) * 100,
+        totalRevenue: paymentStats.totalCollected,
+      },
+      statusBreakdown,
+      paymentStats,
+      departmentBreakdown,
+      yearBreakdown,
+      membershipBreakdown,
+      registrationTimeline: Object.entries(registrationTimeline)
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => new Date(a.date) - new Date(b.date)),
+      attendanceStats,
+      reviewStats,
+      certificateStats,
+      formCompletionRate: Math.round(formCompletionRate),
+    });
+  } catch (error) {
+    console.error('Get analytics error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Sync certificates from Google Drive (Admin endpoint)
+// @route   POST /api/admin/events/:eventId/sync-certificates
+// @access  Private/Admin
+export const syncCertificates = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { driveFolderId, driveFolderUrl } = req.body;
+
+    if (!driveFolderId) {
+      return res.status(400).json({ message: 'Google Drive folder ID is required' });
+    }
+
+    // Validate Google Drive credentials
+    if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
+      return res.status(500).json({
+        message: 'Google Drive API credentials not configured. Please set environment variables.',
+      });
+    }
+
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    // Import googleapis here
+    const { google } = await import('googleapis');
+
+    // Initialize Drive client
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      },
+      scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+    });
+
+    const drive = google.drive({ version: 'v3', auth });
+
+    // List all files in the folder
+    const response = await drive.files.list({
+      q: `'${driveFolderId}' in parents and trashed=false and mimeType='application/pdf'`,
+      fields: 'files(id, name, webViewLink)',
+      pageSize: 1000,
+    });
+
+    const files = response.data.files || [];
+
+    if (files.length === 0) {
+      return res.status(400).json({
+        message: 'No PDF files found in the specified Google Drive folder',
+      });
+    }
+
+    // Get all registrations for this event
+    const registrations = await Registration.find({ event: eventId }).populate('user', 'name email');
+
+    const matchedFiles = [];
+    const unmatchedFiles = [];
+
+    // Simple name matching for certificates
+    for (const file of files) {
+      const fileName = file.name.toLowerCase().replace(/\.(pdf|PDF)$/, '').trim();
+
+      // Try to find matching registration by user name
+      const matchingReg = registrations.find((reg) => {
+        const userName = reg.user.name.toLowerCase().trim().replace(/\s+/g, '_');
+        return fileName.includes(userName) || userName.includes(fileName.replace(/_/g, ' '));
+      });
+
+      if (matchingReg) {
+        const certificateUrl = `https://drive.google.com/uc?export=download&id=${file.id}`;
+
+        matchingReg.certificate.url = certificateUrl;
+        matchingReg.certificate.status = 'locked';
+
+        // Unlock if conditions met
+        if (
+          matchingReg.status === 'confirmed' &&
+          (matchingReg.review.submitted || matchingReg.certificate.adminOverride)
+        ) {
+          matchingReg.certificate.status = 'available';
+          matchingReg.certificate.unlockedAt = new Date();
+        } else if (matchingReg.status === 'confirmed' && !matchingReg.review.submitted) {
+          matchingReg.certificate.status = 'review_pending';
+        }
+
+        await matchingReg.save();
+
+        matchedFiles.push({
+          filename: file.name,
+          fileId: file.id,
+          userId: matchingReg.user._id,
+          registrationId: matchingReg.registrationId,
+        });
+      } else {
+        unmatchedFiles.push({
+          filename: file.name,
+          fileId: file.id,
+          reason: 'no_participant_found',
+        });
+      }
+    }
+
+    // Update event with sync info
+    event.certificatesDriveFolderId = driveFolderId;
+    event.certificatesDriveFolderUrl = driveFolderUrl || '';
+    event.lastCertificateSync = {
+      syncedAt: new Date(),
+      syncedBy: req.user._id,
+      matchedCount: matchedFiles.length,
+      unmatchedCount: unmatchedFiles.length,
+    };
+    await event.save();
+
+    await logActivity(
+      req.user._id,
+      'certificate_sync',
+      `Synced ${matchedFiles.length} certificates for event: ${event.title}`,
+      'event',
+      eventId,
+      event.title,
+      { matchedCount: matchedFiles.length, unmatchedCount: unmatchedFiles.length },
+      req
+    );
+
+    res.json({
+      message: 'Certificate sync completed',
+      syncLog: {
+        totalFiles: files.length,
+        matched: matchedFiles.length,
+        unmatched: unmatchedFiles.length,
+        matchedFiles,
+        unmatchedFiles,
+      },
+    });
+  } catch (error) {
+    console.error('Certificate sync error:', error);
+    res.status(500).json({
+      message: 'Certificate sync failed',
+      error: error.message,
+    });
+  }
+};
+

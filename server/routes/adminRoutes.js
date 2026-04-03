@@ -16,6 +16,10 @@ import {
   markAttendance,
   getEmailLogs,
   exportUsers,
+  getEventRegistrations,
+  getEventPayments,
+  getEventAnalytics,
+  syncCertificates,
 } from '../controllers/adminController.js';
 import { protect, admin } from '../middleware/auth.js';
 
@@ -54,4 +58,11 @@ router.put('/notifications/:id/read', markNotificationRead);
 // Email Logs
 router.get('/email-logs', getEmailLogs);
 
+// Event-specific admin endpoints
+router.get('/events/:eventId/registrations', getEventRegistrations);
+router.get('/events/:eventId/payments', getEventPayments);
+router.get('/events/:eventId/analytics', getEventAnalytics);
+router.post('/events/:eventId/sync-certificates', syncCertificates);
+
 export default router;
+
