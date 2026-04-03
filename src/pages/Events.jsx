@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Users, Search, Filter } from 'lucide-react';
-import { eventService } from '../services/authService';
+import { eventService, authService } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/ToastContainer';
