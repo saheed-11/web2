@@ -18,6 +18,12 @@ const activityLogSchema = new mongoose.Schema({
       'event_status_changed',
       'registration_opened',
       'registration_closed',
+      // Registration actions
+      'event_registered',
+      'registration_cancelled',
+      // Payment actions
+      'payment_verified',
+      'payment_rejected',
       // User actions
       'user_created',
       'user_updated',
