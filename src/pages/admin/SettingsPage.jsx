@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Settings,
@@ -14,12 +14,12 @@ import {
   EyeOff,
   Check,
 } from 'lucide-react';
-import { AuthContext } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../../components/ToastContainer';
 
 const SettingsPage = () => {
-  const { user, updateUserProfile } = useContext(AuthContext);
+  const { user, updateUserProfile } = useAuth();
   const { toasts, hideToast, showSuccess, showError } = useToast();
   const [activeSection, setActiveSection] = useState('profile');
   const [saving, setSaving] = useState(false);
