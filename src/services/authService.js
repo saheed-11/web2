@@ -76,9 +76,15 @@ export const eventService = {
     return response.data;
   },
 
-  // Register for event
+  // Register for event (simple - no custom form)
   registerForEvent: async (id) => {
     const response = await api.post(`/events/${id}/register`);
+    return response.data;
+  },
+
+  // Register for event with custom form data
+  registerForEventWithForm: async (eventId, registrationData) => {
+    const response = await api.post(`/registrations/events/${eventId}/register`, registrationData);
     return response.data;
   },
 

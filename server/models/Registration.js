@@ -26,7 +26,6 @@ const registrationSchema = new mongoose.Schema({
   registrationId: {
     type: String,
     unique: true,
-    required: true,
   },
   // Custom form responses
   formResponses: [fieldResponseSchema],

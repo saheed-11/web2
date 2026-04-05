@@ -66,6 +66,16 @@ export const createRegistration = async (req, res) => {
     const { eventId } = req.params;
     const { formResponses, isIeeeMember, ieeeId } = req.body;
 
+    // Validate eventId format
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({ message: 'Invalid event ID format' });
+    }
+
+    // Validate user context
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: 'User authentication required' });
+    }
+
     const event = await Event.findById(eventId);
 
     if (!event) {
@@ -152,7 +162,21 @@ export const createRegistration = async (req, res) => {
     });
   } catch (error) {
     console.error('Create registration error:', error);
-    res.status(500).json({ message: error.message });
+    
+    // Handle specific MongoDB errors
+    if (error.code === 11000) {
+      return res.status(400).json({ 
+        message: 'You are already registered for this event' 
+      });
+    }
+    
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ 
+        message: 'Validation error: ' + Object.values(error.errors).map(e => e.message).join(', ')
+      });
+    }
+    
+    res.status(500).json({ message: error.message || 'Registration failed' });
   }
 };
 

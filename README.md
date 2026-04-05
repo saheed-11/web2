@@ -178,6 +178,24 @@ Replace placeholder images with actual event photos and team pictures
 2. Set build command: `npm run build`
 3. Set publish directory: `dist`
 
+#### Vercel SPA Routing (Important)
+This project uses BrowserRouter for client-side routing. Add a Vercel rewrite so refreshing deep links like `/about` or `/events/123` serves `index.html` instead of a 404 page.
+
+Create `vercel.json` in the project root:
+
+```json
+{
+   "rewrites": [
+      {
+         "source": "/((?!api/|.*\\..*).*)",
+         "destination": "/index.html"
+      }
+   ]
+}
+```
+
+If your API is hosted separately, keep `VITE_API_URL` set to the backend URL so API requests are not treated as frontend routes.
+
 ### GitHub Pages
 ```bash
 npm run build
