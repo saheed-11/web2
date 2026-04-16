@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
+import logoWhite from '../logo/ccet sb white.png';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
@@ -40,13 +41,11 @@ const Footer = () => {
           {/* About Section */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-ieee-blue rounded-lg flex items-center justify-center">
-                <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
-                  <path d="M18 3L5 11V25L18 33L31 25V11L18 3Z" stroke="white" strokeWidth="2" fill="rgba(255,255,255,0.1)"/>
-                  <circle cx="18" cy="18" r="3" fill="white"/>
-                </svg>
-              </div>
-              <span className="text-2xl font-bold font-display text-white">IEEE</span>
+              <img 
+                src={logoWhite} 
+                alt="IEEE Logo"
+                className="h-12 object-contain"
+              />
             </div>
             <p className="text-sm leading-relaxed">
               IEEE Student Branch at Carmel College of Engineering and Technology.

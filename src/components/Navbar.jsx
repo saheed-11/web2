@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, Moon, Sun, User, LogOut, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import logoWhite from '../logo/ccet sb white.png';
+import logoBlue from '../logo/ccet sb blue .png';
 
 const Navbar = ({ darkMode, toggleDarkMode }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -54,16 +56,11 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
         <div className="flex items-center justify-between h-20 px-4">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center transform transition-transform group-hover:scale-110">
-              <svg width="28" height="28" viewBox="0 0 36 36" fill="none" className="transform transition-transform group-hover:rotate-12">
-                <path d="M18 3L5 11V25L18 33L31 25V11L18 3Z" stroke="#0369a1" strokeWidth="2.2" fill="rgba(3,105,161,0.1)"/>
-                <path d="M18 9L10 14V22L18 27L26 22V14L18 9Z" fill="rgba(3,105,161,0.2)"/>
-                <circle cx="18" cy="18" r="3.5" fill="#0369a1"/>
-              </svg>
-            </div>
-            <span className={`text-2xl font-bold font-display ${scrolled ? 'text-ieee-blue dark:text-blue-400' : 'text-white'}`}>
-              IEEE
-            </span>
+            <img 
+              src={scrolled ? logoBlue : logoWhite} 
+              alt="IEEE Logo"
+              className="h-64 object-contain transition-all duration-300"
+            />
           </Link>
 
           {/* Desktop Navigation */}
